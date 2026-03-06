@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 OUTDIR = "out_txt"
 
 # 固定抓取頁數：p=0 ... p=200
-MAX_P = 1
+MAX_P = 200
 
 # 基本網路參數（不在 CLI 暴露）
 TIMEOUT = 20
