@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 OUTDIR = "out_txt"
 
 # 固定抓取頁數：p=0 ... p=200
-MAX_P = 200
+MAX_P = 1
 
 # 基本網路參數（不在 CLI 暴露）
 TIMEOUT = 20
@@ -33,7 +33,7 @@ RESULT_FLEX_KEY_CLASSES = [
     "flex", "items-center", "justify-between", "overflow-hidden"
 ]
 
-# 文章頁主容器（照你文件B描述）
+# 文章頁主容器
 ARTICLE_CONTAINER_CLASSES = [
     "container", "max-w-4xl", "mx-auto", "px-8", "py-8", "bg-white",
     "border", "border-gray-200", "rounded-lg"
@@ -144,11 +144,16 @@ def extract_article_fields(article_html: str):
     title = one_line(h1.get_text(" ", strip=True)) if h1 else ""
 
     # 原文來源：容器內第一個 div.mb-4（排除 border-b 和 mb-8）
+    # 優先取 <a href> 的網址，否則取0
     source = ""
     for d in container.find_all("div"):
         cls = d.get("class", [])
         if "mb-4" in cls and "border-b" not in cls and "mb-8" not in cls:
-            source = normalize_text(d.get_text("\n", strip=True))
+            a = d.find("a", href=True)
+            if a and a["href"].strip():
+                source = a["href"].strip()
+            else:
+                source = "0"
             break
 
     # 數據：div.mb-4.text-gray-700.border-b.pb-4
