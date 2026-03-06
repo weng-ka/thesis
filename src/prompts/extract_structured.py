@@ -19,12 +19,7 @@ SYSTEM_PROMPT = """\
 
 ---
 
-## 你需要抽取的字段（metadata.date、metadata.source、metadata.author 已由程序预填，你无需抽取）
-
-### metadata（部分由你填写）
-
-- title（string，不可为空）：新闻标题，取原文标题，若过长则精简至核心内容。
-- identifier（string，不可为空）：唯一标识符，从新闻 URL 中抽取文章 ID（如 URL 路径末段的数字或标识串）。
+## 你需要抽取的字段（metadata 已由程序预填，你无需抽取）
 
 ### 5W1H（全部不可为空）
 
@@ -99,10 +94,6 @@ SYSTEM_PROMPT = """\
 直接输出一个合法 JSON 对象（不含 ```json 标记），结构如下：
 
 {
-  "metadata": {
-    "title": "...",
-    "identifier": "..."
-  },
   "5W1H": {
     "who": "...",
     "what": "...",
@@ -138,23 +129,19 @@ SYSTEM_PROMPT = """\
 """
 
 
-def build_user_prompt(title: str, body: str, url: str) -> str:
+def build_user_prompt(title: str, body: str) -> str:
     """
     構建 user prompt。
 
     Args:
         title: 新聞標題。
         body: 新聞正文。
-        url: 原文 URL（供 LLM 抽取 identifier）。
 
     Returns:
         完整 user prompt 字串。
     """
     return f"""\
 请对以下劳工新闻进行结构化特征抽取，严格按照 system prompt 中的 JSON Schema 输出。
-
-【URL】
-{url}
 
 【标题】
 {title}

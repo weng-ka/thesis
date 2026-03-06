@@ -16,7 +16,7 @@
     "author": "",                   // string（不可為空）：作者或機構；源站無則填 "NA"
     "date": "",                     // string（不可為空，YYYY-MM-DD）：發布日期
     "source": "",                   // string（不可為空）：新聞來源網址（原文 URL）
-    "identifier": ""                // string（不可為空）：唯一標識符
+    "identifier": ""                // string（不可為空）：唯一標識符，格式 "NEWS-{檔名編號}"（如 "NEWS-0221"）
   },
 
   "5W1H": {
@@ -105,7 +105,7 @@
     "author": "NA",
     "date": "2022-07-05",
     "source": "http://news.hsw.cn/system/2022/0705/1490297.shtml",
-    "identifier": "708"
+    "identifier": "NEWS-4020"
   },
   "5W1H": {
     "who": "西安雁塔天佑儿童医院运营部员工（李女士、许先生等7人）与陕西天佑儿童医疗管理集团",
