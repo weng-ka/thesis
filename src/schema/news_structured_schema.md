@@ -85,7 +85,13 @@
         //   - 健康權損害：健康權利被剝奪但傷害尚未顯現（如未體檢、職業病防護缺失、未繳醫保等）
         "harm_experienced": [],
         "rights_violated": [],      // string[]（可為空陣列）：從事實提煉的核心權益問題，每個問題一個字串
-        "compensation_received": "" // string（可為空）：工人所獲補償
+        "responses_to_violations": [
+          {
+            "entity": "",            // string（不可為空）：回應實體（如「地方勞動局」「醫院副院長」等）
+            "response": ""           // string（不可為空）：該實體的具體回應內容或處置措施
+          }
+        ],
+        "compensation_received": "" // string（可為空）：工人實際獲得的補償
       }
     }
   ]
@@ -159,6 +165,16 @@
           "拖欠工资7个月（每人约两万余元）",
           "未签劳动合同",
           "五险一金仅缴纳医疗保险"
+        ],
+        "responses_to_violations": [
+          {
+            "entity": "医院行政副院长",
+            "response": "称经营困难，将补签合同补缴社保"
+          },
+          {
+            "entity": "集团行政负责人",
+            "response": "称已成立专项小组核实人数与金额，将寻找投资方解决"
+          }
         ],
         "compensation_received": ""
       }
