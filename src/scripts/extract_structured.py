@@ -6,7 +6,11 @@
 
 支援單篇與批量模式：
   單篇：python extract_structured.py single <file>
-  批量：python extract_structured.py batch [--concurrency 5] [--retry 3]
+  # 批量模式：依次處理多篇文件
+  # 用法：python extract_structured.py batch [-c 5] [-r 3] [-n 10]
+  #   -c：同時處理（執行緒）數，預設 5
+  #   -r：每篇最多重試次數，預設 3
+  #   -n：最多處理檔案數，預設 10
 
 批量模式自動跳過已完成檔案（斷點續跑），失敗記錄寫入 logs/extract_errors.log。
 """
@@ -91,6 +95,34 @@ def parse_raw_content(content: str, filename: str) -> dict:
     return {"title": title, "body": body, "identifier": identifier}
 
 
+def _strip_json_comments(s: str) -> str:
+    """
+    移除 LLM 可能輸出的 JSON 內 // 單行註解，並刪除因此產生的尾隨逗號。
+    不處理字串內容內的 //（依該行雙引號奇偶判斷是否在字串中）。
+    """
+    lines: list[str] = []
+    for line in s.split("\n"):
+        in_string = False
+        i = 0
+        while i < len(line):
+            if line[i] == "\\" and in_string and i + 1 < len(line):
+                i += 2
+                continue
+            if line[i] == '"':
+                in_string = not in_string
+                i += 1
+                continue
+            if not in_string and i + 1 < len(line) and line[i : i + 2] == "//":
+                line = line[:i].rstrip()
+                break
+            i += 1
+        lines.append(line)
+    # 移除尾隨逗號（JSON 不允許 , } 或 , ]）
+    joined = "\n".join(lines)
+    joined = re.sub(r",(\s*[}\]])", r"\1", joined)
+    return joined
+
+
 def call_llm(user_prompt: str, max_retries: int = 3) -> dict:
     """
     調用 LLM API 進行結構化抽取，含 exponential backoff 重試。
@@ -123,6 +155,7 @@ def call_llm(user_prompt: str, max_retries: int = 3) -> dict:
             raw_json = response.choices[0].message.content or ""
             stripped = re.sub(r"^```(?:json)?\s*\n?", "", raw_json.strip())
             stripped = re.sub(r"\n?```\s*$", "", stripped).strip()
+            stripped = _strip_json_comments(stripped)
             return json.loads(stripped)
 
         except json.JSONDecodeError as e:
@@ -244,17 +277,22 @@ def _process_one(raw_path: Path, max_retries: int) -> tuple[str, bool, str]:
         return (raw_path.name, False, str(e))
 
 
-def run_batch(concurrency: int = 5, max_retries: int = 3) -> None:
+def run_batch(
+    concurrency: int = 5, max_retries: int = 3, limit: int | None = None
+) -> None:
     """
-    批量處理所有 raw 檔案，自動跳過已完成。
+    批量處理 raw 檔案，自動跳過已完成。
 
     Args:
         concurrency: 並行數量。
         max_retries: 每篇重試次數。
+        limit: 最多處理篇數；None 表示不限制。
     """
     all_raw = sorted(RAW_DIR.glob("*.txt"))
     done_stems = {p.stem for p in OUT_DIR.glob("*.json")} if OUT_DIR.exists() else set()
     todo = [f for f in all_raw if f.stem not in done_stems]
+    if limit is not None:
+        todo = todo[:limit]
 
     print(f"總計 {len(all_raw)} 篇，已完成 {len(done_stems)} 篇，待處理 {len(todo)} 篇", flush=True)
     print(f"並行數: {concurrency} | 重試次數: {max_retries}", flush=True)
@@ -333,6 +371,10 @@ def main() -> None:
         "-r", "--retry", type=int, default=3,
         help="每篇最大重試次數（預設 3）",
     )
+    sp_batch.add_argument(
+        "-n", "--limit", type=int, default=None,
+        help="最多處理篇數（預設不限制）",
+    )
 
     args = parser.parse_args()
 
@@ -348,7 +390,11 @@ def main() -> None:
             sys.exit(1)
 
     elif args.command == "batch":
-        run_batch(concurrency=args.concurrency, max_retries=args.retry)
+        run_batch(
+            concurrency=args.concurrency,
+            max_retries=args.retry,
+            limit=args.limit,
+        )
 
 
 if __name__ == "__main__":
