@@ -78,13 +78,13 @@ SYSTEM_PROMPT = """\
 **worker_discourse**（数组，每个工人个体为一个对象；若无可辨识个体则为空数组 []）
 每个对象：
 - name（string，不可为空）：工人个体称呼（如 "李女士"、"张师傅"）。
-- gender（string，不可为空）：从称呼推理性别，填 "男" / "女" / "不明"。
+- gender（string，不可为空）：从称呼推理性别，填 "男" / "女" / "不明"。若称呼无从判断性别（如 "小王"）则填 "不明"。
 - personal_statements（string[]，可为空数组）：该工人在文中的所有话语或引述，每句一个字符串。保留原文表述，不改写、不合并、不截断。
 
 **worker_situation**
 - harm_experienced（string[]，不可为空，可多选）
   可选值：死亡 | 身体伤害 | 经济损害 | 精神伤害 | 人格尊严伤害 | 无具体伤害
-- rights_violated（string，可为空）：工人具体受侵害的权益，简要说明。
+- rights_violated（string[]，可为空数组）：从事实中提炼出的核心权益问题，每个问题一个字符串。要求基于文中陈述的事实点出存在的问题，尽量不做主观判断。
 - compensation_received（string，可为空）：工人所获补偿情况。
 
 ---
@@ -120,7 +120,7 @@ SYSTEM_PROMPT = """\
       ],
       "worker_situation": {
         "harm_experienced": ["..."],
-        "rights_violated": "...",
+        "rights_violated": ["...", "..."],
         "compensation_received": ""
       }
     }
