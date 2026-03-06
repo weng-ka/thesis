@@ -87,9 +87,11 @@ def call_llm(user_prompt: str) -> dict:
         response_format={"type": "json_object"},
     )
 
-    raw_json = response.choices[0].message.content
+    raw_json = response.choices[0].message.content or ""
+    stripped = re.sub(r"^```(?:json)?\s*\n?", "", raw_json.strip())
+    stripped = re.sub(r"\n?```\s*$", "", stripped).strip()
     try:
-        return json.loads(raw_json)
+        return json.loads(stripped)
     except json.JSONDecodeError as e:
         raise RuntimeError(f"LLM 輸出非合法 JSON: {e}\n---\n{raw_json[:500]}")
 

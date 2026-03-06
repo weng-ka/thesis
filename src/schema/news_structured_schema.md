@@ -63,7 +63,7 @@
 
       // 涉及行業（不可為空；可多選）
       // 可選值：採礦業 | 製造業 | 交通物流業 | 建築業 |
-      //         服務業 | 黨政機關 | 農業
+      //         服務業 | 黨政機關 | 農業 | 其他
       "involved_industry": [],
 
       // 工人話語：陣列，每一工人個體為一個物件；若無可辨識個體則為空陣列 []
@@ -127,7 +127,7 @@
         "event_date_end": ""
       },
       "province": "陝西省",
-      "worker_identity": ["白領受僱者"],
+      "worker_identity": ["政府公务员或事业单位工作者"],
       "worker_age": ["不明"],
       "company_identity": ["民營企業"],
       "involved_industry": ["服務業"],
