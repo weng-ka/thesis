@@ -10,16 +10,18 @@
 
 import argparse
 import json
+import os
 import re
 import sys
 from pathlib import Path
 
-# =============================================
-# LLM API 配置（請自行填寫）
-API_KEY = "YOUR_API_KEY_HERE"
-MODEL = "gpt-4o"
-BASE_URL = "https://api.openai.com/v1"
-# =============================================
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent.parent.parent / ".env")
+
+API_KEY = os.environ["LLM_API_KEY"]
+MODEL = os.environ.get("LLM_MODEL", "deepseek-v3")
+BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.deepseek.com")
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 SRC_ROOT = PROJECT_ROOT / "src"
