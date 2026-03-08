@@ -5,9 +5,9 @@
 結構化抽取腳本。
 
 支援單篇與批量模式：
-  單篇：python extract_structured.py single <file>
+  單篇：python extract_schema.py single <file>
   # 批量模式：依次處理多篇文件
-  # 用法：python extract_structured.py batch [-c 5] [-r 3] [-n 10]
+  # 用法：python extract_schema.py batch [-c 5] [-r 3] [-n 10]
   #   -c：同時處理（執行緒）數，預設 5
   #   -r：每篇最多重試次數，預設 3
   #   -n：最多處理檔案數，預設 10
@@ -39,7 +39,7 @@ sys.path.insert(0, str(SRC_ROOT))
 
 from openai import OpenAI
 
-from prompts.extract_structured import SYSTEM_PROMPT, build_user_prompt
+from prompts.extract_schema import SYSTEM_PROMPT, build_user_prompt
 from scripts.parse_raw_metadata import parse_raw_metadata
 
 RAW_DIR = PROJECT_ROOT / "data" / "news_dataset" / "raw"
@@ -60,7 +60,7 @@ def _get_client() -> OpenAI:
 def _setup_logger() -> logging.Logger:
     """設定 error logger，寫入 logs/extract_errors.log。"""
     LOG_DIR.mkdir(parents=True, exist_ok=True)
-    logger = logging.getLogger("extract_structured")
+    logger = logging.getLogger("extract_schema")
     logger.setLevel(logging.WARNING)
     if not logger.handlers:
         fh = logging.FileHandler(LOG_DIR / "extract_errors.log", encoding="utf-8")
