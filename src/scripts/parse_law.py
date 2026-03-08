@@ -1,5 +1,17 @@
-import re
+"""
+法律條文解析腳本。
+
+將 data/law_corpus/raw/ 中的法律原始文本按「條」切分，
+輸出結構化 JSON 至 data/law_corpus/segmented/。
+
+切分策略：
+  1. 先整行移除章/節/編標題
+  2. 以「行首出現的條號」為切分邊界（忽略正文內的法條引用）
+  3. 對每條法條提取款號（如有）
+"""
+
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -8,74 +20,135 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from config.paths import LAW_RAW_DIR, LAW_SEGMENTED_DIR
 
-# ========= 路径配置 =========
 RAW_DIR = LAW_RAW_DIR
 OUTPUT_DIR = LAW_SEGMENTED_DIR
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# ========= 正则模式 =========
-ARTICLE_PATTERN = re.compile(r"(第[一二三四五六七八九十百零〇]+条)")
-CLAUSE_PATTERN = re.compile(r"（[一二三四五六七八九十]+）")
-CHAPTER_PATTERN = re.compile(r"^第[一二三四五六七八九十百零〇]+章.*?\n")
+HEADING_LINE_RE = re.compile(
+    r"^[\s\u3000\u2002]*(第[一二三四五六七八九十百零〇]+[章节節编編]).+$",
+    re.MULTILINE,
+)
 
-# ========= 遍历所有法律文本 =========
-for law_path in sorted(RAW_DIR.glob("law_*.txt")):
-    filename = law_path.stem
-    parts = filename.split("_", 1)
+ARTICLE_START_RE = re.compile(
+    r"^[\s\u3000\u2002]*(第[一二三四五六七八九十百零〇]+条)",
+    re.MULTILINE,
+)
 
+CLAUSE_RE = re.compile(r"（[一二三四五六七八九十]+）")
+
+BOILERPLATE_RE = re.compile(
+    r"^本[法条條例办辦法规規定解释釋则則].*?(施行|负责解释|負責解釋)",
+    re.DOTALL,
+)
+
+
+def _remove_heading_lines(text: str) -> str:
+    """移除所有章/節/編標題行。"""
+    return HEADING_LINE_RE.sub("", text)
+
+
+def _parse_articles(text: str) -> list[dict]:
+    """
+    以行首條號為邊界切分法條。
+
+    Returns:
+        [{"article_number": "第X条", "text": "...", "clauses": [...]}]
+    """
+    matches = list(ARTICLE_START_RE.finditer(text))
+    if not matches:
+        return []
+
+    articles: list[dict] = []
+
+    for i, m in enumerate(matches):
+        article_number = m.group(1)
+        start = m.end()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        content = text[start:end].strip()
+
+        content = re.sub(r"^[\s\u3000\u2002]+", "", content)
+
+        clause_markers = CLAUSE_RE.findall(content)
+        clauses: list[str] = []
+        if clause_markers:
+            clause_splits = CLAUSE_RE.split(content)
+            for part in clause_splits[1:]:
+                stripped = part.strip()
+                if stripped:
+                    clauses.append(stripped)
+
+        articles.append({
+            "article_number": article_number,
+            "text": content,
+            "clauses": clauses,
+        })
+
+    return articles
+
+
+def parse_law_file(law_path: Path) -> list[dict] | None:
+    """
+    解析單部法律文本。
+
+    Args:
+        law_path: raw txt 檔案路徑。
+
+    Returns:
+        結構化法條列表，或 None（檔名格式不符）。
+    """
     filename = law_path.stem
     parts = filename.split("_")
 
     if len(parts) < 3:
-        print(f"跳过无法识别的文件名：{law_path.name}")
-        continue
+        print(f"跳過無法識別的檔名：{law_path.name}")
+        return None
 
     law_id = f"{parts[0]}_{parts[1]}"
     law_name = "_".join(parts[2:])
 
-    print(f"正在处理：{law_id} {law_name}")
-
     text = law_path.read_text(encoding="utf-8")
-    text = re.sub(r"\n+", "\n", text.strip())
+    text = _remove_heading_lines(text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
 
-    split_parts = ARTICLE_PATTERN.split(text)
+    raw_articles = _parse_articles(text)
 
-    articles = []
-    article_index = 1
-
-    for i in range(1, len(split_parts), 2):
-        article_number = split_parts[i].strip()
-        content = split_parts[i + 1].strip()
-
-        # 去除章标题（若混入）
-        content = CHAPTER_PATTERN.sub("", content).strip()
-
-        # 提取款（合并在同一条下）
-        clause_splits = CLAUSE_PATTERN.split(content)
-        clause_markers = CLAUSE_PATTERN.findall(content)
-
-        clauses = []
-        if clause_markers:
-            for clause_text in clause_splits[1:]:
-                clauses.append(clause_text.strip())
-
-        article_obj = {
+    articles: list[dict] = []
+    idx = 0
+    for art in raw_articles:
+        if BOILERPLATE_RE.match(art["text"]):
+            continue
+        idx += 1
+        articles.append({
             "law_id": law_id,
             "law_name": law_name,
-            "article_number": article_number,
-            "article_index": article_index,
-            "text": content,
-            "clauses": clauses
-        }
+            "article_number": art["article_number"],
+            "article_index": idx,
+            "text": art["text"],
+            "clauses": art["clauses"],
+        })
 
-        articles.append(article_obj)
-        article_index += 1
+    return articles
 
-    # ========= 输出 JSON（每部法一个文件） =========
-    output_path = OUTPUT_DIR / f"{filename}.json"
-    with output_path.open("w", encoding="utf-8") as f:
-        json.dump(articles, f, ensure_ascii=False, indent=2)
 
-    print(f"✔ 输出 {len(articles)} 条法条 → {output_path.name}")
+def main() -> None:
+    """解析所有法律文本並輸出 JSON。"""
+    all_paths = sorted(RAW_DIR.glob("law_*.txt"))
+    total_articles = 0
 
-print("全部法律处理完成。")
+    for law_path in all_paths:
+        articles = parse_law_file(law_path)
+        if articles is None:
+            continue
+
+        output_path = OUTPUT_DIR / f"{law_path.stem}.json"
+        with output_path.open("w", encoding="utf-8") as f:
+            json.dump(articles, f, ensure_ascii=False, indent=2)
+
+        total_articles += len(articles)
+        print(f"  {articles[0]['law_id']} | {len(articles):3d} 條 | {law_path.stem}")
+
+    print(f"\n全部完成：{len(all_paths)} 部法律，共 {total_articles} 條法條")
+
+
+if __name__ == "__main__":
+    main()
