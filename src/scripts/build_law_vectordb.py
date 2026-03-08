@@ -39,6 +39,7 @@ def _log(msg: str) -> None:
 SEGMENTED_DIR = LAW_SEGMENTED_DIR
 DEFAULT_DB_DIR = LAW_VECTORDB_DIR
 DEFAULT_MODEL = "BAAI/bge-m3"
+DEFAULT_MODEL_REVISION = "5617a9f61b028005a4858fdac845db406aefb181"
 
 
 def _collection_name(theme: str) -> str:
@@ -84,7 +85,9 @@ def build_vectordb(model_name: str, db_dir: Path) -> None:
     _log("（首次執行需下載模型，約 2GB，請耐心等待...）")
     t0 = time.time()
     device = get_device()
-    model = SentenceTransformer(model_name, device=device)
+    model = SentenceTransformer(
+        model_name, device=device, revision=DEFAULT_MODEL_REVISION,
+    )
     _log(f"模型載入完成（{time.time() - t0:.1f}s），裝置：{device}")
 
     articles_by_id = _load_articles_by_law_id()

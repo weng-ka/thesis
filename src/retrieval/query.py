@@ -24,6 +24,7 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 from config.device import get_device
 
 DEFAULT_MODEL = "BAAI/bge-m3"
+DEFAULT_MODEL_REVISION = "5617a9f61b028005a4858fdac845db406aefb181"
 MAX_TOKENS = 8192
 
 _model_cache: dict[str, SentenceTransformer] = {}
@@ -40,7 +41,9 @@ class QueryMode(str, Enum):
 def _get_tokenizer(model_name: str = DEFAULT_MODEL) -> AutoTokenizer:
     """載入並快取 tokenizer。"""
     if model_name not in _tokenizer_cache:
-        _tokenizer_cache[model_name] = AutoTokenizer.from_pretrained(model_name)
+        _tokenizer_cache[model_name] = AutoTokenizer.from_pretrained(
+            model_name, revision=DEFAULT_MODEL_REVISION,
+        )
     return _tokenizer_cache[model_name]
 
 
@@ -127,7 +130,9 @@ def load_embedding_model(model_name: str = DEFAULT_MODEL) -> SentenceTransformer
     if model_name not in _model_cache:
         os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
         device = get_device()
-        _model_cache[model_name] = SentenceTransformer(model_name, device=device)
+        _model_cache[model_name] = SentenceTransformer(
+            model_name, device=device, revision=DEFAULT_MODEL_REVISION,
+        )
     return _model_cache[model_name]
 
 
