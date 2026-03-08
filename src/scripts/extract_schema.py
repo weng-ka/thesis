@@ -39,7 +39,7 @@ sys.path.insert(0, str(SRC_ROOT))
 
 from openai import OpenAI
 
-from prompts.extract_schema import SYSTEM_PROMPT, build_user_prompt
+from prompts.schema_extraction_prompt import SYSTEM_PROMPT, build_user_prompt
 from scripts.parse_raw_metadata import parse_raw_metadata
 
 RAW_DIR = PROJECT_ROOT / "data" / "news_dataset" / "raw"

@@ -22,7 +22,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 SRC_ROOT = PROJECT_ROOT / "src"
 sys.path.insert(0, str(SRC_ROOT))
 
-from prompts.extract_schema import SYSTEM_PROMPT, build_user_prompt
+from prompts.schema_extraction_prompt import SYSTEM_PROMPT, build_user_prompt
 from scripts.extract_schema import (
     _strip_json_comments,
     call_llm,
