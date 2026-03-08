@@ -21,6 +21,8 @@ from transformers import AutoTokenizer
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
+from config.device import get_device
+
 DEFAULT_MODEL = "BAAI/bge-m3"
 MAX_TOKENS = 8192
 
@@ -124,8 +126,7 @@ def load_embedding_model(model_name: str = DEFAULT_MODEL) -> SentenceTransformer
     """
     if model_name not in _model_cache:
         os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
-        import torch
-        device = "mps" if torch.backends.mps.is_available() else "cpu"
+        device = get_device()
         _model_cache[model_name] = SentenceTransformer(model_name, device=device)
     return _model_cache[model_name]
 

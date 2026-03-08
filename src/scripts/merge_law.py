@@ -1,8 +1,14 @@
 import os
 import json
+import sys
+from pathlib import Path
 
-# 相對於專案根目錄
-folder_path = "data/law_corpus/segmented"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
+from config.paths import LAW_SEGMENTED_DIR
+
+folder_path = str(LAW_SEGMENTED_DIR)
 
 # 列出當前資料夾所有檔案
 all_files = os.listdir(folder_path)

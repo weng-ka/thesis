@@ -1,10 +1,16 @@
 import re
 import json
+import sys
 from pathlib import Path
 
-# ========= 路径配置（相對於專案根目錄）=========
-RAW_DIR = Path("data/law_corpus/raw")
-OUTPUT_DIR = Path("data/law_corpus/segmented")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
+from config.paths import LAW_RAW_DIR, LAW_SEGMENTED_DIR
+
+# ========= 路径配置 =========
+RAW_DIR = LAW_RAW_DIR
+OUTPUT_DIR = LAW_SEGMENTED_DIR
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ========= 正则模式 =========

@@ -27,6 +27,8 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 import chromadb
 from sentence_transformers import SentenceTransformer
 
+from config.device import get_device
+from config.paths import LAW_SEGMENTED_DIR, LAW_VECTORDB_DIR
 from config.theme_law_mapping import THEME_LAW_MAPPING
 
 
@@ -34,8 +36,8 @@ def _log(msg: str) -> None:
     """即時輸出日誌（強制 flush）。"""
     print(msg, flush=True)
 
-SEGMENTED_DIR = PROJECT_ROOT / "data" / "law_corpus" / "segmented"
-DEFAULT_DB_DIR = PROJECT_ROOT / "data" / "law_corpus" / "vectordb"
+SEGMENTED_DIR = LAW_SEGMENTED_DIR
+DEFAULT_DB_DIR = LAW_VECTORDB_DIR
 DEFAULT_MODEL = "BAAI/bge-m3"
 
 
@@ -81,8 +83,9 @@ def build_vectordb(model_name: str, db_dir: Path) -> None:
     _log(f"載入 embedding 模型：{model_name}")
     _log("（首次執行需下載模型，約 2GB，請耐心等待...）")
     t0 = time.time()
-    model = SentenceTransformer(model_name)
-    _log(f"模型載入完成（{time.time() - t0:.1f}s）")
+    device = get_device()
+    model = SentenceTransformer(model_name, device=device)
+    _log(f"模型載入完成（{time.time() - t0:.1f}s），裝置：{device}")
 
     articles_by_id = _load_articles_by_law_id()
     _log(f"已讀取 {sum(len(v) for v in articles_by_id.values())} 條法條"

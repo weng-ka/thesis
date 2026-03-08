@@ -5,15 +5,20 @@
 import argparse
 import os
 import re
+import sys
 import time
+from pathlib import Path
 from urllib.parse import urljoin, urlparse, parse_qs, urlencode, urlunparse
 
 import requests
 from bs4 import BeautifulSoup
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-# 固定輸出資料夾（相對於專案根目錄）
-OUTDIR = "data/news_dataset/raw"
+from config.paths import NEWS_RAW_DIR
+
+OUTDIR = str(NEWS_RAW_DIR)
 
 # 固定抓取頁數：p=0 ... p=200
 MAX_P = 200

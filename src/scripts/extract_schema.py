@@ -39,12 +39,12 @@ sys.path.insert(0, str(SRC_ROOT))
 
 from openai import OpenAI
 
+from config.paths import LOG_DIR, NEWS_RAW_DIR, NEWS_STRUCTURED_DIR
 from prompts.schema_extraction_prompt import SYSTEM_PROMPT, build_user_prompt
 from scripts.parse_raw_metadata import parse_raw_metadata
 
-RAW_DIR = PROJECT_ROOT / "data" / "news_dataset" / "raw"
-OUT_DIR = PROJECT_ROOT / "data" / "news_dataset" / "structured"
-LOG_DIR = PROJECT_ROOT / "logs"
+RAW_DIR = NEWS_RAW_DIR
+OUT_DIR = NEWS_STRUCTURED_DIR
 
 _client: OpenAI | None = None
 
