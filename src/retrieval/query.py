@@ -1,9 +1,10 @@
 """
 查詢文本構建與向量化模組。
 
-提供兩種查詢模式供實驗比較：
-  - 5w1h_only:      僅使用 5W1H 結構化特徵
-  - 5w1h_with_body:  使用 5W1H 結構化特徵 + 原始新聞正文
+提供三種查詢模式供實驗比較：
+  - 5w1h_only:        僅使用 5W1H 結構化特徵
+  - 5w1h_with_body:   使用 5W1H 結構化特徵 + 原始新聞正文
+  - 5w1h_with_rights: 使用 5W1H 結構化特徵 + rights_violated 權益問題描述
 """
 
 from __future__ import annotations
@@ -36,6 +37,7 @@ class QueryMode(str, Enum):
 
     FIVE_W1H_ONLY = "5w1h_only"
     FIVE_W1H_WITH_BODY = "5w1h_with_body"
+    FIVE_W1H_WITH_RIGHTS = "5w1h_with_rights"
 
 
 def _get_tokenizer(model_name: str = DEFAULT_MODEL) -> AutoTokenizer:
@@ -80,12 +82,10 @@ def build_query_text(
     mode: QueryMode = QueryMode.FIVE_W1H_ONLY,
     model_name: str = DEFAULT_MODEL,
     max_tokens: int = MAX_TOKENS,
+    rights_violated: list[str] | None = None,
 ) -> str:
     """
-    將結構化特徵（及可選的正文）拼接為檢索用查詢文本。
-
-    在 5w1h_with_body 模式下，若正文過長會自動截斷，
-    確保總 token 數不超過模型上限（預設 8192）。
+    將結構化特徵（及可選的正文/權益描述）拼接為檢索用查詢文本。
 
     Args:
         five_w1h: 5W1H dict，包含 who/what/when/where/why/how。
@@ -93,6 +93,7 @@ def build_query_text(
         mode: 查詢模式。
         model_name: 用於 tokenizer 計算 token 數的模型名稱。
         max_tokens: 查詢文本的最大 token 數。
+        rights_violated: 權益問題描述列表。僅在 5w1h_with_rights 模式下使用。
 
     Returns:
         拼接後的查詢文本字串。
@@ -108,6 +109,13 @@ def build_query_text(
 
     if mode == QueryMode.FIVE_W1H_ONLY:
         return w1h_block
+
+    if mode == QueryMode.FIVE_W1H_WITH_RIGHTS:
+        items = [r for r in (rights_violated or []) if r.strip()]
+        if not items:
+            return w1h_block
+        rights_block = "涉及權益問題：" + "；".join(items)
+        return f"{w1h_block}\n{rights_block}"
 
     trimmed = body.strip()
     if not trimmed:

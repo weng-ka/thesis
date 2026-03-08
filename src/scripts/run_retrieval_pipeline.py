@@ -1,16 +1,18 @@
 """
 端到端 RAG 檢索管線驗證腳本。
 
-對 110 篇 structured 新聞，以兩種查詢模式（5W1H-only / 5W1H+body）
+對 110 篇 structured 新聞，以指定查詢模式組合
 各執行完整的「構建查詢 → 向量化 → 路由檢索 Top-10」流程，
 輸出 CSV 供人工抽檢與模式比較。
 
 Usage:
-    PYTHONUNBUFFERED=1 python src/scripts/run_retrieval_pipeline.py
+    PYTHONUNBUFFERED=1 python src/scripts/run_retrieval_pipeline.py --preset all
+    PYTHONUNBUFFERED=1 python src/scripts/run_retrieval_pipeline.py --preset 5w1h_vs_rights
 """
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import re
@@ -52,6 +54,15 @@ class _NewsRecord:
     five_w1h: dict[str, str]
     themes: list[str]
     body: str
+    rights_violated: list[str]
+
+
+def _extract_rights_violated(data: dict) -> list[str]:
+    """從 structured JSON 的 events 中彙總所有 rights_violated。"""
+    items: list[str] = []
+    for ev in data.get("events", []):
+        items.extend(ev.get("worker_situation", {}).get("rights_violated", []))
+    return items
 
 
 def _load_news(structured_path: Path) -> _NewsRecord | None:
@@ -64,6 +75,7 @@ def _load_news(structured_path: Path) -> _NewsRecord | None:
     title = meta.get("title", "")
     five_w1h = data.get("5W1H", {})
     themes = data.get("themes", [])
+    rights_violated = _extract_rights_violated(data)
 
     raw_path = NEWS_RAW_DIR / (structured_path.stem + ".txt")
     body = ""
@@ -79,6 +91,7 @@ def _load_news(structured_path: Path) -> _NewsRecord | None:
         five_w1h=five_w1h,
         themes=themes,
         body=body,
+        rights_violated=rights_violated,
     )
 
 
@@ -100,7 +113,10 @@ def _run_one_mode(
 ) -> _ModeResult:
     """對單篇新聞執行單一模式的完整檢索。"""
     try:
-        query_text = build_query_text(news.five_w1h, news.body, mode=mode)
+        query_text = build_query_text(
+            news.five_w1h, news.body, mode=mode,
+            rights_violated=news.rights_violated,
+        )
 
         t0 = time.perf_counter()
         vec = encode_query(query_text, model=model)
@@ -132,31 +148,38 @@ DETAIL_FIELDS = [
     "routed_theme", "article_text",
 ]
 
-COMPARE_FIELDS = [
-    "news_id", "title", "themes",
-    "avg_sim_5w1h", "avg_sim_body",
-    "top1_law_5w1h", "top1_sim_5w1h",
-    "top1_law_body", "top1_sim_body",
-    "sim_diff",
-]
+def _build_compare_fields(labels: list[str]) -> list[str]:
+    """根據模式標籤動態產生 comparison CSV 欄位。"""
+    fields = ["news_id", "title", "themes"]
+    for lb in labels:
+        fields.append(f"avg_sim_{lb}")
+    for lb in labels:
+        fields.extend([f"top1_law_{lb}", f"top1_sim_{lb}"])
+    base = labels[0]
+    for lb in labels[1:]:
+        fields.append(f"diff_{lb}_vs_{base}")
+    return fields
 
 
 def _write_csvs(
     detail_rows: list[dict],
     compare_rows: list[dict],
+    compare_fields: list[str],
+    suffix: str = "",
 ) -> tuple[Path, Path]:
-    """寫出兩份 CSV。"""
+    """寫出兩份 CSV，suffix 加在檔名結尾。"""
     OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
 
-    detail_path = OUTPUTS_DIR / "retrieval_results.csv"
+    tag = f"_{suffix}" if suffix else ""
+    detail_path = OUTPUTS_DIR / f"retrieval_results{tag}.csv"
     with open(detail_path, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.DictWriter(f, fieldnames=DETAIL_FIELDS)
         w.writeheader()
         w.writerows(detail_rows)
 
-    compare_path = OUTPUTS_DIR / "retrieval_comparison.csv"
+    compare_path = OUTPUTS_DIR / f"retrieval_comparison{tag}.csv"
     with open(compare_path, "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.DictWriter(f, fieldnames=COMPARE_FIELDS)
+        w = csv.DictWriter(f, fieldnames=compare_fields)
         w.writeheader()
         w.writerows(compare_rows)
 
@@ -170,9 +193,28 @@ def _avg_sim(results: list) -> float:
     return sum(r.similarity for r in results) / len(results)
 
 
+def _print_mode_stats(label: str, mode_results: list[_ModeResult]) -> None:
+    """輸出單一模式的統計。"""
+    n = len(mode_results)
+    ok = sum(1 for r in mode_results if not r.error and r.output.results)
+    err = sum(1 for r in mode_results if r.error)
+    _log(f"  {label}: 成功={ok}/{n}  錯誤={err}")
+
+    sims = [r.similarity for mr in mode_results for r in mr.output.results]
+    if sims:
+        _log(f"    相似度  平均={statistics.mean(sims):.4f}  "
+             f"中位={statistics.median(sims):.4f}  "
+             f"最高={max(sims):.4f}  最低={min(sims):.4f}")
+
+    top1 = [mr.output.results[0].similarity for mr in mode_results
+            if mr.output.results]
+    if top1:
+        _log(f"    Top-1   平均={statistics.mean(top1):.4f}  "
+             f"中位={statistics.median(top1):.4f}")
+
+
 def _print_summary(
-    all_5w1h: list[_ModeResult],
-    all_body: list[_ModeResult],
+    all_modes: dict[str, list[_ModeResult]],
     theme_counter: Counter,
     total_time: float,
 ) -> None:
@@ -181,48 +223,19 @@ def _print_summary(
     _log("  RAG Pipeline Validation — 統計摘要")
     _log("=" * 60)
 
-    n = len(all_5w1h)
-    ok_5w1h = sum(1 for r in all_5w1h if not r.error and r.output.results)
-    ok_body = sum(1 for r in all_body if not r.error and r.output.results)
-    err_5w1h = sum(1 for r in all_5w1h if r.error)
-    err_body = sum(1 for r in all_body if r.error)
-
+    n = len(next(iter(all_modes.values())))
     _log(f"\n總新聞數: {n}")
-    _log(f"成功檢索（有結果）: 5W1H-only={ok_5w1h}/{n}, 5W1H+body={ok_body}/{n}")
-    _log(f"錯誤數: 5W1H-only={err_5w1h}, 5W1H+body={err_body}")
 
-    sims_5w1h = [r.similarity for mr in all_5w1h for r in mr.output.results]
-    sims_body = [r.similarity for mr in all_body for r in mr.output.results]
-
-    if sims_5w1h:
-        _log(f"\n[5W1H-only] 相似度:")
-        _log(f"  平均={statistics.mean(sims_5w1h):.4f}  "
-             f"中位={statistics.median(sims_5w1h):.4f}  "
-             f"最高={max(sims_5w1h):.4f}  最低={min(sims_5w1h):.4f}")
-
-    if sims_body:
-        _log(f"\n[5W1H+body] 相似度:")
-        _log(f"  平均={statistics.mean(sims_body):.4f}  "
-             f"中位={statistics.median(sims_body):.4f}  "
-             f"最高={max(sims_body):.4f}  最低={min(sims_body):.4f}")
-
-    top1_5w1h = [mr.output.results[0].similarity for mr in all_5w1h
-                 if mr.output.results]
-    top1_body = [mr.output.results[0].similarity for mr in all_body
-                 if mr.output.results]
-    if top1_5w1h and top1_body:
-        _log(f"\nTop-1 相似度對比:")
-        _log(f"  5W1H-only  平均={statistics.mean(top1_5w1h):.4f}  "
-             f"中位={statistics.median(top1_5w1h):.4f}")
-        _log(f"  5W1H+body  平均={statistics.mean(top1_body):.4f}  "
-             f"中位={statistics.median(top1_body):.4f}")
+    for label, results in all_modes.items():
+        _print_mode_stats(label, results)
 
     _log(f"\nTheme 路由分佈（被路由到的次數）:")
     for theme, cnt in theme_counter.most_common():
         _log(f"  {theme}: {cnt}")
 
-    skipped_all = Counter()
-    for mr in all_5w1h:
+    skipped_all: Counter = Counter()
+    first_mode = next(iter(all_modes.values()))
+    for mr in first_mode:
         for s in mr.output.skipped_themes:
             skipped_all[s] += 1
     if skipped_all:
@@ -230,20 +243,54 @@ def _print_summary(
         for t, c in skipped_all.most_common():
             _log(f"  {t}: {c}")
 
-    avg_encode = statistics.mean(
-        [mr.encode_ms for mr in all_5w1h + all_body if not mr.error]
-    ) if any(not mr.error for mr in all_5w1h + all_body) else 0
-    avg_retrieve = statistics.mean(
-        [mr.retrieve_ms for mr in all_5w1h + all_body if not mr.error]
-    ) if any(not mr.error for mr in all_5w1h + all_body) else 0
+    all_results = [mr for results in all_modes.values() for mr in results]
+    valid = [mr for mr in all_results if not mr.error]
+    avg_encode = statistics.mean([mr.encode_ms for mr in valid]) if valid else 0
+    avg_retrieve = statistics.mean([mr.retrieve_ms for mr in valid]) if valid else 0
 
     _log(f"\n平均延遲:  encode={avg_encode:.1f}ms  retrieve={avg_retrieve:.1f}ms")
     _log(f"總耗時: {total_time:.1f}s")
     _log("=" * 60)
 
 
-def main() -> None:
-    """主函式。"""
+ALL_MODE_LABELS = {
+    QueryMode.FIVE_W1H_ONLY: "5w1h",
+    QueryMode.FIVE_W1H_WITH_BODY: "body",
+    QueryMode.FIVE_W1H_WITH_RIGHTS: "rights",
+}
+
+PRESETS: dict[str, tuple[list[QueryMode], str]] = {
+    "all": (
+        [QueryMode.FIVE_W1H_ONLY, QueryMode.FIVE_W1H_WITH_BODY,
+         QueryMode.FIVE_W1H_WITH_RIGHTS],
+        "all_modes",
+    ),
+    "5w1h_vs_rights": (
+        [QueryMode.FIVE_W1H_ONLY, QueryMode.FIVE_W1H_WITH_RIGHTS],
+        "5w1h_vs_rights",
+    ),
+}
+
+
+def _top1_fields(label: str, results: list) -> dict:
+    """產生單一模式的 top1 comparison 欄位。"""
+    top1 = results[0] if results else None
+    return {
+        f"top1_law_{label}": (f"《{top1.law_name}》{top1.article_number}"
+                              if top1 else ""),
+        f"top1_sim_{label}": f"{top1.similarity:.4f}" if top1 else "",
+    }
+
+
+def _run_preset(modes: list[QueryMode], suffix: str) -> None:
+    """以指定模式組合執行完整管線並輸出 CSV。"""
+    labels = [ALL_MODE_LABELS[m] for m in modes]
+    compare_fields = _build_compare_fields(labels)
+
+    _log(f"\n{'─' * 60}")
+    _log(f"  Preset: {suffix}  模式: {', '.join(labels)}")
+    _log(f"{'─' * 60}")
+
     _log("載入 embedding 模型…")
     t_start = time.perf_counter()
     model = load_embedding_model()
@@ -254,8 +301,7 @@ def main() -> None:
 
     detail_rows: list[dict] = []
     compare_rows: list[dict] = []
-    all_5w1h: list[_ModeResult] = []
-    all_body: list[_ModeResult] = []
+    all_modes_data: dict[str, list[_ModeResult]] = {lb: [] for lb in labels}
     theme_counter: Counter = Counter()
 
     t_pipeline = time.perf_counter()
@@ -268,20 +314,19 @@ def main() -> None:
 
         _log(f"  [{idx+1}/{len(structured_files)}] {news.news_id} — {news.title[:40]}…")
 
-        res_5w1h = _run_one_mode(news, QueryMode.FIVE_W1H_ONLY, model)
-        res_body = _run_one_mode(news, QueryMode.FIVE_W1H_WITH_BODY, model)
+        mode_results: dict[str, _ModeResult] = {}
+        for mode in modes:
+            label = ALL_MODE_LABELS[mode]
+            res = _run_one_mode(news, mode, model)
+            mode_results[label] = res
+            all_modes_data[label].append(res)
 
-        all_5w1h.append(res_5w1h)
-        all_body.append(res_body)
-
-        for routed in res_5w1h.output.routed_themes:
-            theme_counter[routed] += 1
-        for routed in res_body.output.routed_themes:
+        for routed in mode_results[labels[0]].output.routed_themes:
             theme_counter[routed] += 1
 
         themes_str = "; ".join(news.themes)
 
-        for mr in (res_5w1h, res_body):
+        for label, mr in mode_results.items():
             if mr.error:
                 detail_rows.append({
                     "news_id": news.news_id,
@@ -312,33 +357,45 @@ def main() -> None:
                     "article_text": r.text,
                 })
 
-        avg_5 = _avg_sim(res_5w1h.output.results)
-        avg_b = _avg_sim(res_body.output.results)
-        top1_5 = res_5w1h.output.results[0] if res_5w1h.output.results else None
-        top1_b = res_body.output.results[0] if res_body.output.results else None
+        avg = {lb: _avg_sim(mr.output.results) for lb, mr in mode_results.items()}
+        base_label = labels[0]
 
-        compare_rows.append({
+        row: dict = {
             "news_id": news.news_id,
             "title": news.title,
             "themes": themes_str,
-            "avg_sim_5w1h": f"{avg_5:.4f}",
-            "avg_sim_body": f"{avg_b:.4f}",
-            "top1_law_5w1h": (f"《{top1_5.law_name}》{top1_5.article_number}"
-                              if top1_5 else ""),
-            "top1_sim_5w1h": f"{top1_5.similarity:.4f}" if top1_5 else "",
-            "top1_law_body": (f"《{top1_b.law_name}》{top1_b.article_number}"
-                              if top1_b else ""),
-            "top1_sim_body": f"{top1_b.similarity:.4f}" if top1_b else "",
-            "sim_diff": f"{avg_b - avg_5:.4f}",
-        })
+        }
+        for lb in labels:
+            row[f"avg_sim_{lb}"] = f"{avg[lb]:.4f}"
+        for lb, mr in mode_results.items():
+            row.update(_top1_fields(lb, mr.output.results))
+        for lb in labels[1:]:
+            row[f"diff_{lb}_vs_{base_label}"] = f"{avg[lb] - avg[base_label]:.4f}"
+
+        compare_rows.append(row)
 
     total_time = time.perf_counter() - t_pipeline
 
-    detail_path, compare_path = _write_csvs(detail_rows, compare_rows)
+    detail_path, compare_path = _write_csvs(
+        detail_rows, compare_rows, compare_fields, suffix,
+    )
     _log(f"\n全量明細 → {detail_path}")
     _log(f"對比摘要 → {compare_path}")
 
-    _print_summary(all_5w1h, all_body, theme_counter, total_time)
+    _print_summary(all_modes_data, theme_counter, total_time)
+
+
+def main() -> None:
+    """主函式。"""
+    parser = argparse.ArgumentParser(description="RAG 檢索管線驗證")
+    parser.add_argument(
+        "--preset", choices=list(PRESETS), default="all",
+        help="模式組合預設（預設 all）",
+    )
+    args = parser.parse_args()
+
+    modes, suffix = PRESETS[args.preset]
+    _run_preset(modes, suffix)
 
 
 if __name__ == "__main__":
