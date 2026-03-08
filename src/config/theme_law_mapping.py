@@ -29,6 +29,15 @@ ALL_LAW_IDS: set[str] = {
     lid for ids in THEME_LAW_MAPPING.values() for lid in ids
 }
 
+THEME_TO_COLLECTION: dict[str, str] = {
+    theme: f"theme_{idx:02d}"
+    for idx, theme in enumerate(THEME_LAW_MAPPING)
+}
+
+COLLECTION_TO_THEME: dict[str, str] = {
+    v: k for k, v in THEME_TO_COLLECTION.items()
+}
+
 _SIMPLIFIED_TO_CANONICAL: dict[str, str] = {
     "劳动合同与劳动关系": "勞動合同與勞動關係",
     "劳动争议": "勞動爭議",

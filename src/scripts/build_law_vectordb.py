@@ -29,7 +29,7 @@ from sentence_transformers import SentenceTransformer
 
 from config.device import get_device
 from config.paths import LAW_SEGMENTED_DIR, LAW_VECTORDB_DIR
-from config.theme_law_mapping import THEME_LAW_MAPPING
+from config.theme_law_mapping import THEME_LAW_MAPPING, THEME_TO_COLLECTION
 
 
 def _log(msg: str) -> None:
@@ -43,14 +43,8 @@ DEFAULT_MODEL_REVISION = "5617a9f61b028005a4858fdac845db406aefb181"
 
 
 def _collection_name(theme: str) -> str:
-    """
-    將議題名稱轉為合法的 ChromaDB collection name。
-
-    ChromaDB 要求 collection name 為 3-63 字元的 ASCII，
-    這裡用議題在 THEME_LAW_MAPPING 中的序號作為名稱。
-    """
-    idx = list(THEME_LAW_MAPPING.keys()).index(theme)
-    return f"theme_{idx:02d}"
+    """將議題名稱轉為 ChromaDB collection name。"""
+    return THEME_TO_COLLECTION[theme]
 
 
 def _load_articles_by_law_id() -> dict[str, list[dict]]:
