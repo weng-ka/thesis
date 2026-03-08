@@ -7,4 +7,5 @@ data/
 docs/
 logs/
 notes/
+outputs/
 .pytest_cache/
