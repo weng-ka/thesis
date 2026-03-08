@@ -6,3 +6,4 @@ data/
 docs/
 logs/
 notes/
+.pytest_cache/
