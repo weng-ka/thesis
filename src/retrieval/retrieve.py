@@ -25,6 +25,7 @@ from config.theme_law_mapping import (
     THEME_TO_COLLECTION,
     normalize_theme,
 )
+from retrieval.query import build_query_text, encode_query, load_embedding_model
 
 _chroma_client_cache: dict[str, chromadb.ClientAPI] = {}
 
@@ -172,3 +173,43 @@ def format_retrieved_laws(output: RetrievalOutput) -> str:
             f"（相似度 {r.similarity:.3f}）\n{r.text}"
         )
     return "\n\n".join(lines)
+
+
+def _extract_rights_violated(data: dict) -> list[str]:
+    """從 structured JSON 的 events 中彙總所有 rights_violated。"""
+    items: list[str] = []
+    for ev in data.get("events", []):
+        items.extend(ev.get("worker_situation", {}).get("rights_violated", []))
+    return items
+
+
+def retrieve_laws_for_article(
+    structured: dict,
+    top_k: int = 10,
+    model: object | None = None,
+) -> str:
+    """
+    端到端便利函式：從 structured JSON 直接取得格式化法條文本。
+
+    內部串接 build_query_text → encode_query → retrieve_laws → format。
+
+    Args:
+        structured: extract_schema 產出的完整結構化 dict。
+        top_k: 最終返回的法條數量。
+        model: 已載入的 SentenceTransformer；為 None 則自動載入。
+
+    Returns:
+        格式化後的法條文本字串，可直接輸入摘要 prompt。
+    """
+    five_w1h = structured.get("5W1H", {})
+    themes = structured.get("themes", [])
+    rights_violated = _extract_rights_violated(structured)
+
+    query_text = build_query_text(five_w1h, rights_violated)
+
+    if model is None:
+        model = load_embedding_model()
+    query_vector = encode_query(query_text, model=model)
+
+    output = retrieve_laws(query_vector, themes, top_k=top_k)
+    return format_retrieved_laws(output)
