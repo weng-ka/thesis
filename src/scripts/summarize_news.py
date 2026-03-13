@@ -8,14 +8,10 @@
 使用 --no-rag 時僅使用原文與結構化資料，不檢索法條。
 
 Usage:
-    python src/scripts/summarize_news.py \
-        --raw  data/news_dataset/raw/0221_xxx.txt \
-        --structured data/news_dataset/structured/0221_xxx.json \
-        [--out outputs/summary_0221.md] \
-        [--top-k 10] \
-        [--max-retries 3]
-    # 僅結構化、無 RAG：
-    python src/scripts/summarize_news.py --raw ... --structured ... --no-rag [--out ...]
+    # 只給新聞編號 + 指定要生成哪些版本（未指定會報錯）
+    python src/scripts/summarize_news.py 0099 --rag
+    python src/scripts/summarize_news.py 0099 --structured-only
+    python src/scripts/summarize_news.py 0099 --rag --structured-only
 """
 
 from __future__ import annotations
@@ -26,6 +22,7 @@ import re
 import sys
 import time
 from pathlib import Path
+from typing import Iterable
 
 from dotenv import load_dotenv
 
@@ -178,27 +175,96 @@ def summarize_single(
     return summary
 
 
+def _normalize_news_id(news_id: str) -> str:
+    """
+    將使用者輸入的新聞編號正規化成 4 位數字字串（例如：'99' → '0099'）。
+
+    Args:
+        news_id: 使用者輸入（允許 1~4 位數字，或已帶前導 0 的 4 位數字）。
+
+    Returns:
+        4 位數字字串。
+
+    Raises:
+        ValueError: 輸入不是純數字或長度不在 1~4。
+    """
+    s = (news_id or "").strip()
+    if not s.isdigit():
+        raise ValueError(f"news_id 必須是純數字：{news_id!r}")
+    if not (1 <= len(s) <= 4):
+        raise ValueError(f"news_id 長度需為 1~4 位：{news_id!r}")
+    return s.zfill(4)
+
+
+def _pick_single_match(paths: Iterable[Path], *, label: str) -> Path:
+    """
+    從 glob 結果中挑出唯一檔案；若 0 或多個則直接報錯（避免用錯檔）。
+
+    Args:
+        paths: 候選路徑。
+        label: 用於錯誤訊息（例如 'raw' / 'structured'）。
+
+    Returns:
+        唯一匹配的路徑。
+
+    Raises:
+        FileNotFoundError: 找不到任何匹配。
+        RuntimeError: 匹配到多個檔案（需要使用者修正檔名或改用舊入口）。
+    """
+    items = sorted(paths)
+    if not items:
+        raise FileNotFoundError(f"找不到 {label} 檔案（glob 無匹配）")
+    if len(items) > 1:
+        shown = "\n".join(f"- {p}" for p in items[:20])
+        more = "" if len(items) <= 20 else f"\n...（另有 {len(items) - 20} 個省略）"
+        raise RuntimeError(
+            f"{label} 檔案匹配到多個，無法自動選擇：\n{shown}{more}\n"
+            f"請調整檔名讓 {label} 只匹配一個檔，或改用舊入口手動指定 --{label}。"
+        )
+    return items[0]
+
+
+def _resolve_paths_by_id(news_id_4: str) -> tuple[Path, Path]:
+    """
+    依 4 位數字新聞編號自動解析 raw/structured 檔案路徑。
+
+    Args:
+        news_id_4: 4 位數字字串（例如 '0099'）。
+
+    Returns:
+        (raw_path, structured_path)
+    """
+    raw_dir = PROJECT_ROOT / "data" / "news_dataset" / "raw"
+    structured_dir = PROJECT_ROOT / "data" / "news_dataset" / "structured"
+
+    raw_glob = f"{news_id_4}*.txt"
+    structured_glob = f"{news_id_4}*.json"
+
+    raw_path = _pick_single_match(raw_dir.glob(raw_glob), label="raw")
+    structured_path = _pick_single_match(structured_dir.glob(structured_glob), label="structured")
+    return raw_path, structured_path
+
+
 def main() -> None:
     """CLI 入口。"""
     parser = argparse.ArgumentParser(
         description="勞工新聞摘要生成（單篇）"
     )
     parser.add_argument(
-        "--raw", required=True,
-        help="raw txt 檔案路徑",
+        "news_id",
+        nargs="?",
+        default=None,
+        help="新聞編號（1~4 位數字，例如 99 或 0099）。提供後可自動對應 raw/structured 並輸出至 outputs/",
     )
     parser.add_argument(
-        "--structured", required=True,
-        help="structured JSON 檔案路徑",
-    )
-    parser.add_argument(
-        "--out", default=None,
-        help="輸出路徑（若省略則輸出至 stdout）",
-    )
-    parser.add_argument(
-        "--no-rag",
+        "--rag",
         action="store_true",
-        help="僅使用原文與結構化資料，不檢索法條",
+        help="生成含 RAG 的摘要（news_id 模式下會輸出到 outputs/summary_XXXX_rag.md）",
+    )
+    parser.add_argument(
+        "--structured-only",
+        action="store_true",
+        help="生成不含 RAG（僅 structured）的摘要（news_id 模式下會輸出到 outputs/summary_XXXX_structured_only.md）",
     )
     parser.add_argument(
         "--top-k", type=int, default=10,
@@ -211,35 +277,51 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    raw_path = Path(args.raw)
-    structured_path = Path(args.structured)
+    if args.news_id is None:
+        parser.error("必須提供新聞編號 news_id（例如：99 或 0099）")
 
-    if not raw_path.exists():
-        print(f"錯誤：raw 檔案不存在：{raw_path}", file=sys.stderr)
-        sys.exit(1)
-    if not structured_path.exists():
-        print(f"錯誤：structured 檔案不存在：{structured_path}", file=sys.stderr)
-        sys.exit(1)
+    if not args.rag and not args.structured_only:
+        parser.error("必須至少指定一個輸出版本：--rag 或 --structured-only（兩個都加會各產一份）")
 
     try:
-        summary = summarize_single(
-            raw_path,
-            structured_path,
-            use_rag=not args.no_rag,
-            top_k=args.top_k,
-            max_retries=args.max_retries,
-        )
+        news_id_4 = _normalize_news_id(args.news_id)
+        raw_path, structured_path = _resolve_paths_by_id(news_id_4)
     except Exception as e:
         print(f"錯誤：{e}", file=sys.stderr)
         sys.exit(1)
 
-    if args.out:
-        out_path = Path(args.out)
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(summary, encoding="utf-8")
-        print(f"摘要已寫入：{out_path}", file=sys.stderr)
-    else:
-        print(summary)
+    outputs_dir = PROJECT_ROOT / "outputs"
+    outputs_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        # 先執行無 RAG（structured-only），再執行含 RAG
+        if args.structured_only:
+            out_path = outputs_dir / f"summary_{news_id_4}_structured_only.md"
+            summary = summarize_single(
+                raw_path,
+                structured_path,
+                use_rag=False,
+                top_k=args.top_k,
+                max_retries=args.max_retries,
+            )
+            out_path.write_text(summary, encoding="utf-8")
+            print(f"摘要已寫入：{out_path}", file=sys.stderr)
+
+        if args.rag:
+            out_path = outputs_dir / f"summary_{news_id_4}_rag.md"
+            summary = summarize_single(
+                raw_path,
+                structured_path,
+                use_rag=True,
+                top_k=args.top_k,
+                max_retries=args.max_retries,
+            )
+            out_path.write_text(summary, encoding="utf-8")
+            print(f"摘要已寫入：{out_path}", file=sys.stderr)
+
+    except Exception as e:
+        print(f"錯誤：{e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
