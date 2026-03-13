@@ -4,7 +4,8 @@
 """
 單篇勞工新聞摘要生成腳本。
 
-流程：讀取 raw 原文 + structured JSON → RAG 即時檢索相關法條 → LLM 生成摘要。
+流程：讀取 raw 原文 + structured JSON →（可選）RAG 即時檢索相關法條 → LLM 生成摘要。
+使用 --no-rag 時僅使用原文與結構化資料，不檢索法條。
 
 Usage:
     python src/scripts/summarize_news.py \
@@ -13,6 +14,8 @@ Usage:
         [--out outputs/summary_0221.md] \
         [--top-k 10] \
         [--max-retries 3]
+    # 僅結構化、無 RAG：
+    python src/scripts/summarize_news.py --raw ... --structured ... --no-rag [--out ...]
 """
 
 from __future__ import annotations
@@ -41,6 +44,10 @@ sys.path.insert(0, str(SRC_ROOT))
 from openai import OpenAI
 
 from prompts.summary_prompt import SYSTEM_PROMPT, build_user_prompt
+from prompts.summary_prompt_structured_only import (
+    SYSTEM_PROMPT_STRUCTURED_ONLY,
+    build_user_prompt_structured_only,
+)
 from retrieval.retrieve import retrieve_laws_for_article
 
 _client: OpenAI | None = None
@@ -131,16 +138,19 @@ def call_llm_for_summary(
 def summarize_single(
     raw_path: Path,
     structured_path: Path,
+    *,
+    use_rag: bool = True,
     top_k: int = 10,
     max_retries: int = 3,
 ) -> str:
     """
-    對單篇新聞執行完整摘要流程：讀取 → RAG 檢索 → LLM 生成。
+    對單篇新聞執行摘要流程：讀取 →（可選）RAG 檢索 → LLM 生成。
 
     Args:
         raw_path: raw txt 路徑。
         structured_path: structured JSON 路徑。
-        top_k: RAG 檢索的 Top-k 法條數量。
+        use_rag: 若 True 則檢索法條並使用含 RAG 的 prompt；若 False 則僅用原文與結構化資料。
+        top_k: RAG 檢索的 Top-k 法條數量（use_rag 時有效）。
         max_retries: LLM 呼叫重試次數。
 
     Returns:
@@ -151,16 +161,19 @@ def summarize_single(
     with open(structured_path, encoding="utf-8") as f:
         structured = json.load(f)
 
-    print("正在檢索相關法條…", file=sys.stderr, flush=True)
-    laws_text = retrieve_laws_for_article(structured, top_k=top_k)
-
-    if not laws_text:
-        print("[WARN] RAG 未檢索到任何法條。", file=sys.stderr)
-
-    user_prompt = build_user_prompt(raw_text, structured, laws_text)
+    if use_rag:
+        print("正在檢索相關法條…", file=sys.stderr, flush=True)
+        laws_text = retrieve_laws_for_article(structured, top_k=top_k)
+        if not laws_text:
+            print("[WARN] RAG 未檢索到任何法條。", file=sys.stderr)
+        user_prompt = build_user_prompt(raw_text, structured, laws_text)
+        system_prompt = SYSTEM_PROMPT
+    else:
+        user_prompt = build_user_prompt_structured_only(raw_text, structured)
+        system_prompt = SYSTEM_PROMPT_STRUCTURED_ONLY
 
     print("正在呼叫 LLM 生成摘要…", file=sys.stderr, flush=True)
-    summary = call_llm_for_summary(SYSTEM_PROMPT, user_prompt, max_retries=max_retries)
+    summary = call_llm_for_summary(system_prompt, user_prompt, max_retries=max_retries)
 
     return summary
 
@@ -183,8 +196,13 @@ def main() -> None:
         help="輸出路徑（若省略則輸出至 stdout）",
     )
     parser.add_argument(
+        "--no-rag",
+        action="store_true",
+        help="僅使用原文與結構化資料，不檢索法條",
+    )
+    parser.add_argument(
         "--top-k", type=int, default=10,
-        help="RAG 檢索 Top-k 法條數量（預設 10）",
+        help="RAG 檢索 Top-k 法條數量（預設 10，--no-rag 時忽略）",
     )
     parser.add_argument(
         "--max-retries", type=int, default=3,
@@ -205,7 +223,9 @@ def main() -> None:
 
     try:
         summary = summarize_single(
-            raw_path, structured_path,
+            raw_path,
+            structured_path,
+            use_rag=not args.no_rag,
             top_k=args.top_k,
             max_retries=args.max_retries,
         )
