@@ -199,6 +199,39 @@ def merge_result(llm_result: dict, meta_dict: dict, parsed: dict) -> dict:
     }
 
 
+def extract_structured_from_raw(
+    raw_path: Path,
+    max_retries: int = 3,
+) -> dict:
+    """
+    即時從單篇 raw 檔案抽取結構化資料，僅回傳 dict，不寫入檔案。
+
+    Args:
+        raw_path: raw txt 檔案路徑。
+        max_retries: LLM API 重試次數。
+
+    Returns:
+        extract_schema 規格的完整結構化 JSON dict。
+
+    Raises:
+        RuntimeError: metadata 解析失敗、無正文內容，或 LLM / JSON 解析失敗。
+    """
+    content = raw_path.read_text(encoding="utf-8")
+
+    meta = parse_raw_metadata(content)
+    if not meta:
+        raise RuntimeError(f"metadata 解析失敗：{raw_path.name}")
+
+    parsed = parse_raw_content(content, raw_path.name)
+    if not parsed["body"]:
+        raise RuntimeError(f"原文缺少內文：{raw_path.name}")
+
+    user_prompt = build_user_prompt(title=parsed["title"], body=parsed["body"])
+    llm_result = call_llm(user_prompt, max_retries=max_retries)
+
+    return merge_result(llm_result, meta.to_dict(), parsed)
+
+
 def extract_single(
     raw_path: Path, dry_run: bool = False, max_retries: int = 3
 ) -> bool:

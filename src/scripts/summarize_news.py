@@ -50,6 +50,7 @@ from prompts.summary_prompt_raw_only import (
     build_user_prompt_raw_only,
 )
 from retrieval.retrieve import retrieve_laws_for_article
+from scripts.extract_schema import extract_structured_from_raw
 
 _client: OpenAI | None = None
 
@@ -138,7 +139,7 @@ def call_llm_for_summary(
 
 def summarize_single(
     raw_path: Path,
-    structured_path: Path,
+    structured: dict,
     *,
     use_rag: bool = True,
     top_k: int = 10,
@@ -149,7 +150,7 @@ def summarize_single(
 
     Args:
         raw_path: raw txt 路徑。
-        structured_path: structured JSON 路徑。
+        structured: 即時抽取或預先生成的 structured dict。
         use_rag: 若 True 則檢索法條並使用含 RAG 的 prompt；若 False 則僅用原文與結構化資料。
         top_k: RAG 檢索的 Top-k 法條數量（use_rag 時有效）。
         max_retries: LLM 呼叫重試次數。
@@ -158,9 +159,6 @@ def summarize_single(
         生成的摘要文字。
     """
     raw_text = _read_raw(raw_path)
-
-    with open(structured_path, encoding="utf-8") as f:
-        structured = json.load(f)
 
     if use_rag:
         print("正在檢索相關法條…", file=sys.stderr, flush=True)
@@ -274,6 +272,40 @@ def _resolve_paths_by_id(news_id_4: str) -> tuple[Path, Path]:
     return raw_path, structured_path
 
 
+def _resolve_raw_path_by_id(news_id_4: str) -> Path:
+    """
+    依 4 位數字新聞編號自動解析 raw 檔案路徑。
+
+    Args:
+        news_id_4: 4 位數字字串（例如 '0099'）。
+
+    Returns:
+        raw_path。
+    """
+    raw_dir = PROJECT_ROOT / "data" / "news_dataset" / "raw"
+    raw_glob = f"{news_id_4}*.txt"
+    return _pick_single_match(raw_dir.glob(raw_glob), label="raw")
+
+
+def _build_structured_for_summary(
+    raw_path: Path,
+    *,
+    max_retries: int,
+) -> dict:
+    """
+    從 raw 檔案即時抽取結構化資料，供摘要流程使用。
+
+    Args:
+        raw_path: raw txt 檔案路徑。
+        max_retries: LLM 呼叫重試次數。
+
+    Returns:
+        extract_schema 規格的 structured dict。
+    """
+    print("正在即時抽取結構化資料…", file=sys.stderr, flush=True)
+    return extract_structured_from_raw(raw_path, max_retries=max_retries)
+
+
 def main() -> None:
     """CLI 入口。"""
     parser = argparse.ArgumentParser(
@@ -322,7 +354,7 @@ def main() -> None:
 
     try:
         news_id_4 = _normalize_news_id(args.news_id)
-        raw_path, structured_path = _resolve_paths_by_id(news_id_4)
+        raw_path = _resolve_raw_path_by_id(news_id_4)
     except Exception as e:
         print(f"錯誤：{e}", file=sys.stderr)
         sys.exit(1)
@@ -341,11 +373,18 @@ def main() -> None:
             out_path.write_text(summary, encoding="utf-8")
             print(f"摘要已寫入：{out_path}", file=sys.stderr)
 
+        structured: dict | None = None
+        if args.structured_only or args.rag:
+            structured = _build_structured_for_summary(
+                raw_path,
+                max_retries=args.max_retries,
+            )
+
         if args.structured_only:
             out_path = outputs_dir / f"summary_{news_id_4}_structured_only.md"
             summary = summarize_single(
                 raw_path,
-                structured_path,
+                structured,
                 use_rag=False,
                 top_k=args.top_k,
                 max_retries=args.max_retries,
@@ -357,7 +396,7 @@ def main() -> None:
             out_path = outputs_dir / f"summary_{news_id_4}_rag.md"
             summary = summarize_single(
                 raw_path,
-                structured_path,
+                structured,
                 use_rag=True,
                 top_k=args.top_k,
                 max_retries=args.max_retries,
