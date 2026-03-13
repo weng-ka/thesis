@@ -45,6 +45,10 @@ from prompts.summary_prompt_structured_only import (
     SYSTEM_PROMPT_STRUCTURED_ONLY,
     build_user_prompt_structured_only,
 )
+from prompts.summary_prompt_raw_only import (
+    SYSTEM_PROMPT_RAW_ONLY,
+    build_user_prompt_raw_only,
+)
 from retrieval.retrieve import retrieve_laws_for_article
 
 _client: OpenAI | None = None
@@ -175,6 +179,31 @@ def summarize_single(
     return summary
 
 
+def summarize_single_raw_only(
+    raw_path: Path,
+    *,
+    max_retries: int = 3,
+) -> str:
+    """
+    僅使用 raw 原文執行摘要流程，不讀取結構化資料，也不使用 RAG。
+
+    Args:
+        raw_path: raw txt 路徑。
+        max_retries: LLM 呼叫重試次數。
+
+    Returns:
+        生成的摘要文字。
+    """
+    raw_text = _read_raw(raw_path)
+    user_prompt = build_user_prompt_raw_only(raw_text)
+    system_prompt = SYSTEM_PROMPT_RAW_ONLY
+
+    print("正在呼叫 LLM 生成（raw-only）摘要…", file=sys.stderr, flush=True)
+    summary = call_llm_for_summary(system_prompt, user_prompt, max_retries=max_retries)
+
+    return summary
+
+
 def _normalize_news_id(news_id: str) -> str:
     """
     將使用者輸入的新聞編號正規化成 4 位數字字串（例如：'99' → '0099'）。
@@ -267,6 +296,11 @@ def main() -> None:
         help="生成不含 RAG（僅 structured）的摘要（news_id 模式下會輸出到 outputs/summary_XXXX_structured_only.md）",
     )
     parser.add_argument(
+        "--raw-only",
+        action="store_true",
+        help="生成僅基於 raw 原文、不含結構化資料與 RAG 的摘要（news_id 模式下會輸出到 outputs/summary_XXXX_raw.md）",
+    )
+    parser.add_argument(
         "--top-k", type=int, default=10,
         help="RAG 檢索 Top-k 法條數量（預設 10，--no-rag 時忽略）",
     )
@@ -280,8 +314,11 @@ def main() -> None:
     if args.news_id is None:
         parser.error("必須提供新聞編號 news_id（例如：99 或 0099）")
 
-    if not args.rag and not args.structured_only:
-        parser.error("必須至少指定一個輸出版本：--rag 或 --structured-only（兩個都加會各產一份）")
+    if not (args.rag or args.structured_only or args.raw_only):
+        parser.error(
+            "必須至少指定一個輸出版本：--rag、--structured-only、--raw-only "
+            "（可同時指定多個，會各產一份）"
+        )
 
     try:
         news_id_4 = _normalize_news_id(args.news_id)
@@ -294,7 +331,16 @@ def main() -> None:
     outputs_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        # 先執行無 RAG（structured-only），再執行含 RAG
+        # 先執行 raw-only，再執行無 RAG（structured-only），最後執行含 RAG
+        if args.raw_only:
+            out_path = outputs_dir / f"summary_{news_id_4}_raw.md"
+            summary = summarize_single_raw_only(
+                raw_path,
+                max_retries=args.max_retries,
+            )
+            out_path.write_text(summary, encoding="utf-8")
+            print(f"摘要已寫入：{out_path}", file=sys.stderr)
+
         if args.structured_only:
             out_path = outputs_dir / f"summary_{news_id_4}_structured_only.md"
             summary = summarize_single(
