@@ -41,19 +41,19 @@ def build_query_text(
         拼接後的查詢文本字串。
     """
     w1h_block = (
-        f"涉及主體：{five_w1h.get('who', '')}\n"
-        f"事件內容：{five_w1h.get('what', '')}\n"
-        f"發生時間：{five_w1h.get('when', '')}\n"
-        f"發生地點：{five_w1h.get('where', '')}\n"
+        f"涉及主体：{five_w1h.get('who', '')}\n"
+        f"事件内容：{five_w1h.get('what', '')}\n"
+        f"发生时间：{five_w1h.get('when', '')}\n"
+        f"发生地点：{five_w1h.get('where', '')}\n"
         f"事件原因：{five_w1h.get('why', '')}\n"
-        f"事件經過：{five_w1h.get('how', '')}"
+        f"事件经过：{five_w1h.get('how', '')}"
     )
 
     items = [r for r in (rights_violated or []) if r.strip()]
     if not items:
         return w1h_block
 
-    rights_block = "涉及權益問題：" + "；".join(items)
+    rights_block = "涉及权益问题：" + "；".join(items)
     return f"{w1h_block}\n{rights_block}"
 
 

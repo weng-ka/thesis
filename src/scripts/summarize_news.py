@@ -171,7 +171,7 @@ def summarize_single(
         user_prompt = build_user_prompt_structured_only(raw_text, structured)
         system_prompt = SYSTEM_PROMPT_STRUCTURED_ONLY
 
-    print("正在呼叫 LLM 生成摘要…", file=sys.stderr, flush=True)
+    print("正在调用 LLM 生成摘要…", file=sys.stderr, flush=True)
     summary = call_llm_for_summary(system_prompt, user_prompt, max_retries=max_retries)
 
     return summary
@@ -196,7 +196,7 @@ def summarize_single_raw_only(
     user_prompt = build_user_prompt_raw_only(raw_text)
     system_prompt = SYSTEM_PROMPT_RAW_ONLY
 
-    print("正在呼叫 LLM 生成（raw-only）摘要…", file=sys.stderr, flush=True)
+    print("正在调用 LLM 生成（raw-only）摘要…", file=sys.stderr, flush=True)
     summary = call_llm_for_summary(system_prompt, user_prompt, max_retries=max_retries)
 
     return summary
