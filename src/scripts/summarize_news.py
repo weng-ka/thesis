@@ -9,9 +9,9 @@
 
 Usage:
     # 只給新聞編號 + 指定要生成哪些版本（未指定會報錯）
-    python src/scripts/summarize_news.py 0099 --rag
-    python src/scripts/summarize_news.py 0099 --structured-only
-    python src/scripts/summarize_news.py 0099 --rag --structured-only
+    python3 src/scripts/summarize_news.py 0099 --rag
+    python3 src/scripts/summarize_news.py 0099 --structured-only
+    python3 src/scripts/summarize_news.py 0099 --rag --structured-only
 """
 
 from __future__ import annotations
