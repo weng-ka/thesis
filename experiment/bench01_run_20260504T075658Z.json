@@ -1,0 +1,101 @@
+{
+  "step": "bench01",
+  "script": "src/scripts/bench_01_build_raw_benchmark.py",
+  "prompt_module": "src/prompts/summary_prompt_raw_only.py",
+  "model": "gpt-4o",
+  "base_url": "https://yibuapi.com/v1",
+  "started_at_utc": "2026-05-04T07:56:19.889037+00:00",
+  "finished_at_utc": "2026-05-04T07:56:58.784587+00:00",
+  "records": [
+    {
+      "seq": 1,
+      "source_file": "data/news_dataset/raw/0001_近年来，外卖骑手几乎成了中国劳资纠纷和集体抗议中最常出现的身影之一。由.txt",
+      "output_file": "intermediate/benchmark_bench01/bench01_01_0001_近年来_外卖骑手几乎成了中国劳资纠纷和集体抗议中最常出现的身影之一_由_reference.md",
+      "model": "gpt-4o",
+      "base_url": "https://yibuapi.com/v1",
+      "ok": true,
+      "error": null
+    },
+    {
+      "seq": 2,
+      "source_file": "data/news_dataset/raw/0002_元宵节（3月3日），江苏句容市宝华镇环卫工人集体罢工，讨要工资。 --.txt",
+      "output_file": "intermediate/benchmark_bench01/bench01_02_0002_元宵节_3月3日_江苏句容市宝华镇环卫工人集体罢工_讨要工资_--_reference.md",
+      "model": "gpt-4o",
+      "base_url": "https://yibuapi.com/v1",
+      "ok": true,
+      "error": null
+    },
+    {
+      "seq": 3,
+      "source_file": "data/news_dataset/raw/0003_西贝被曝降薪缓发、裁员赔偿分期1年，员工拒后被通知待岗.txt",
+      "output_file": "intermediate/benchmark_bench01/bench01_03_0003_西贝被曝降薪缓发_裁员赔偿分期1年_员工拒后被通知待岗_reference.md",
+      "model": "gpt-4o",
+      "base_url": "https://yibuapi.com/v1",
+      "ok": true,
+      "error": null
+    },
+    {
+      "seq": 4,
+      "source_file": "data/news_dataset/raw/0004_“谁先删负面，优先补发工资！”丰茂烤串连环闭店，创始人求员工“顾全大局”.txt",
+      "output_file": "intermediate/benchmark_bench01/bench01_04_0004_谁先删负面_优先补发工资_丰茂烤串连环闭店_创始人求员工_顾全大局_reference.md",
+      "model": "gpt-4o",
+      "base_url": "https://yibuapi.com/v1",
+      "ok": true,
+      "error": null
+    },
+    {
+      "seq": 5,
+      "source_file": "data/news_dataset/raw/0005_恶意欠薪84755元，一服饰厂老板逃匿外地被警方抓获.txt",
+      "output_file": "intermediate/benchmark_bench01/bench01_05_0005_恶意欠薪84755元_一服饰厂老板逃匿外地被警方抓获_reference.md",
+      "model": "gpt-4o",
+      "base_url": "https://yibuapi.com/v1",
+      "ok": true,
+      "error": null
+    },
+    {
+      "seq": 6,
+      "source_file": "data/news_dataset/raw/0006_环卫工未燃尽烟花爆炸失明.txt",
+      "output_file": "intermediate/benchmark_bench01/bench01_06_0006_环卫工未燃尽烟花爆炸失明_reference.md",
+      "model": "gpt-4o",
+      "base_url": "https://yibuapi.com/v1",
+      "ok": true,
+      "error": null
+    },
+    {
+      "seq": 7,
+      "source_file": "data/news_dataset/raw/0007_深圳欠薪保障基金一年垫付超7300万元 能否保障工资支付？(含视频).txt",
+      "output_file": "intermediate/benchmark_bench01/bench01_07_0007_深圳欠薪保障基金一年垫付超7300万元_能否保障工资支付_含视频_reference.md",
+      "model": "gpt-4o",
+      "base_url": "https://yibuapi.com/v1",
+      "ok": true,
+      "error": null
+    },
+    {
+      "seq": 8,
+      "source_file": "data/news_dataset/raw/0008_「杭州足浴店员工聚餐酒后摔倒身亡，家属讨说法遭镇压（2026.02.2.txt",
+      "output_file": "intermediate/benchmark_bench01/bench01_08_0008_杭州足浴店员工聚餐酒后摔倒身亡_家属讨说法遭镇压_2026_02_2_reference.md",
+      "model": "gpt-4o",
+      "base_url": "https://yibuapi.com/v1",
+      "ok": true,
+      "error": null
+    },
+    {
+      "seq": 9,
+      "source_file": "data/news_dataset/raw/0009_近日，贵州省的遵义医投康复医院140名员工投诉被欠薪也不缴纳社保，去相.txt",
+      "output_file": "intermediate/benchmark_bench01/bench01_09_0009_近日_贵州省的遵义医投康复医院140名员工投诉被欠薪也不缴纳社保_去相_reference.md",
+      "model": "gpt-4o",
+      "base_url": "https://yibuapi.com/v1",
+      "ok": true,
+      "error": null
+    },
+    {
+      "seq": 10,
+      "source_file": "data/news_dataset/raw/0010_哈啰对“仅招30岁以下员工”致歉：已下架并修正相关招聘信息，坚决反对任何形式的就业歧视.txt",
+      "output_file": "intermediate/benchmark_bench01/bench01_10_0010_哈啰对_仅招30岁以下员工_致歉_已下架并修正相关招聘信息_坚决反对任何形式的就业歧视_reference.md",
+      "model": "gpt-4o",
+      "base_url": "https://yibuapi.com/v1",
+      "ok": true,
+      "error": null
+    }
+  ]
+}
