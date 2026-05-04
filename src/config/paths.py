@@ -20,6 +20,10 @@ NEWS_DATASET_DIR = DATA_DIR / "news_dataset"
 NEWS_RAW_DIR = NEWS_DATASET_DIR / "raw"
 NEWS_STRUCTURED_DIR = NEWS_DATASET_DIR / "structured"
 
+# ── 實驗產物（向量庫以外的執行輸出、日誌）──
+INTERMEDIATE_DIR = PROJECT_ROOT / "intermediate"
+OUTPUTS_DIR = INTERMEDIATE_DIR / "outputs"
+LOG_DIR = INTERMEDIATE_DIR / "logs"
+
 # ── 其他 ──
-LOG_DIR = PROJECT_ROOT / "logs"
 SRC_DIR = PROJECT_ROOT / "src"

@@ -12,7 +12,7 @@
   #   -r：每篇最多重試次數，預設 3
   #   -n：最多處理檔案數，預設 10
 
-批量模式自動跳過已完成檔案（斷點續跑），失敗記錄寫入 logs/extract_errors.log。
+批量模式自動跳過已完成檔案（斷點續跑），失敗記錄寫入 intermediate/logs/extract_errors.log。
 """
 
 import argparse
@@ -58,7 +58,7 @@ def _get_client() -> OpenAI:
 
 
 def _setup_logger() -> logging.Logger:
-    """設定 error logger，寫入 logs/extract_errors.log。"""
+    """設定 error logger，寫入 intermediate/logs/extract_errors.log。"""
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     logger = logging.getLogger("extract_schema")
     logger.setLevel(logging.WARNING)

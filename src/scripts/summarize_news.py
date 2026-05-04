@@ -40,6 +40,7 @@ sys.path.insert(0, str(SRC_ROOT))
 
 from openai import OpenAI
 
+from config.paths import OUTPUTS_DIR
 from prompts.summary_prompt import SYSTEM_PROMPT, build_user_prompt
 from prompts.summary_prompt_structured_only import (
     SYSTEM_PROMPT_STRUCTURED_ONLY,
@@ -315,22 +316,22 @@ def main() -> None:
         "news_id",
         nargs="?",
         default=None,
-        help="新聞編號（1~4 位數字，例如 99 或 0099）。提供後可自動對應 raw/structured 並輸出至 outputs/",
+        help="新聞編號（1~4 位數字，例如 99 或 0099）。提供後可自動對應 raw/structured 並輸出至 intermediate/outputs/",
     )
     parser.add_argument(
         "--rag",
         action="store_true",
-        help="生成含 RAG 的摘要（news_id 模式下會輸出到 outputs/summary_XXXX_rag.md）",
+        help="生成含 RAG 的摘要（news_id 模式下會輸出到 intermediate/outputs/summary_XXXX_rag.md）",
     )
     parser.add_argument(
         "--structured-only",
         action="store_true",
-        help="生成不含 RAG（僅 structured）的摘要（news_id 模式下會輸出到 outputs/summary_XXXX_structured_only.md）",
+        help="生成不含 RAG（僅 structured）的摘要（news_id 模式下會輸出到 intermediate/outputs/summary_XXXX_structured_only.md）",
     )
     parser.add_argument(
         "--raw-only",
         action="store_true",
-        help="生成僅基於 raw 原文、不含結構化資料與 RAG 的摘要（news_id 模式下會輸出到 outputs/summary_XXXX_raw.md）",
+        help="生成僅基於 raw 原文、不含結構化資料與 RAG 的摘要（news_id 模式下會輸出到 intermediate/outputs/summary_XXXX_raw.md）",
     )
     parser.add_argument(
         "--top-k", type=int, default=10,
@@ -359,13 +360,12 @@ def main() -> None:
         print(f"錯誤：{e}", file=sys.stderr)
         sys.exit(1)
 
-    outputs_dir = PROJECT_ROOT / "outputs"
-    outputs_dir.mkdir(parents=True, exist_ok=True)
+    OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
 
     try:
         # 先執行 raw-only，再執行無 RAG（structured-only），最後執行含 RAG
         if args.raw_only:
-            out_path = outputs_dir / f"summary_{news_id_4}_raw.md"
+            out_path = OUTPUTS_DIR / f"summary_{news_id_4}_raw.md"
             summary = summarize_single_raw_only(
                 raw_path,
                 max_retries=args.max_retries,
@@ -381,7 +381,7 @@ def main() -> None:
             )
 
         if args.structured_only:
-            out_path = outputs_dir / f"summary_{news_id_4}_structured_only.md"
+            out_path = OUTPUTS_DIR / f"summary_{news_id_4}_structured_only.md"
             summary = summarize_single(
                 raw_path,
                 structured,
@@ -393,7 +393,7 @@ def main() -> None:
             print(f"摘要已寫入：{out_path}", file=sys.stderr)
 
         if args.rag:
-            out_path = outputs_dir / f"summary_{news_id_4}_rag.md"
+            out_path = OUTPUTS_DIR / f"summary_{news_id_4}_rag.md"
             summary = summarize_single(
                 raw_path,
                 structured,

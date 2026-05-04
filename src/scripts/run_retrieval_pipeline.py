@@ -23,11 +23,10 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
-from config.paths import NEWS_STRUCTURED_DIR
+from config.paths import NEWS_STRUCTURED_DIR, OUTPUTS_DIR
 from retrieval.query import build_query_text, encode_query, load_embedding_model
 from retrieval.retrieve import RetrievalOutput, retrieve_laws
 
-OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 TOP_K = 10
 
 DETAIL_FIELDS = [
