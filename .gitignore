@@ -5,6 +5,5 @@ __pycache__/
 
 data/
 docs/
-intermediate/logs/
-intermediate/outputs/
+intermediate/
 .pytest_cache/
