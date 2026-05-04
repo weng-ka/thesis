@@ -1,0 +1,101 @@
+{
+  "step": "bench02",
+  "script": "src/scripts/bench_02_rag_multimodel.py",
+  "schema_prompt": "src/prompts/schema_extraction_prompt.py",
+  "summary_prompt": "src/prompts/summary_prompt.py",
+  "rag": "src/retrieval/retrieve.py（Chroma 知識庫與主專案相同）",
+  "started_at_utc": "2026-05-04T08:33:06.391174+00:00",
+  "limit": 2,
+  "top_k": 10,
+  "execution_order": "by_article_then_models",
+  "models": [
+    {
+      "model": "qwen-max",
+      "output_dir": "intermediate/rag_model_compare_bench02/qwen-max",
+      "manifest": "intermediate/rag_model_compare_bench02/qwen-max/bench02_manifest.json",
+      "records": [
+        {
+          "seq": 1,
+          "news_id": "0001",
+          "raw": "data/news_dataset/raw/0001_近年来，外卖骑手几乎成了中国劳资纠纷和集体抗议中最常出现的身影之一。由.txt",
+          "model": "qwen-max",
+          "structured_path": "intermediate/rag_model_compare_bench02/qwen-max/structured/bench02_01_0001_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/qwen-max/summary/bench02_01_0001_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        },
+        {
+          "seq": 2,
+          "news_id": "0002",
+          "raw": "data/news_dataset/raw/0002_元宵节（3月3日），江苏句容市宝华镇环卫工人集体罢工，讨要工资。 --.txt",
+          "model": "qwen-max",
+          "structured_path": "intermediate/rag_model_compare_bench02/qwen-max/structured/bench02_02_0002_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/qwen-max/summary/bench02_02_0002_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        }
+      ]
+    },
+    {
+      "model": "glm-5",
+      "output_dir": "intermediate/rag_model_compare_bench02/glm-5",
+      "manifest": "intermediate/rag_model_compare_bench02/glm-5/bench02_manifest.json",
+      "records": [
+        {
+          "seq": 1,
+          "news_id": "0001",
+          "raw": "data/news_dataset/raw/0001_近年来，外卖骑手几乎成了中国劳资纠纷和集体抗议中最常出现的身影之一。由.txt",
+          "model": "glm-5",
+          "structured_path": "intermediate/rag_model_compare_bench02/glm-5/structured/bench02_01_0001_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/glm-5/summary/bench02_01_0001_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        },
+        {
+          "seq": 2,
+          "news_id": "0002",
+          "raw": "data/news_dataset/raw/0002_元宵节（3月3日），江苏句容市宝华镇环卫工人集体罢工，讨要工资。 --.txt",
+          "model": "glm-5",
+          "structured_path": "intermediate/rag_model_compare_bench02/glm-5/structured/bench02_02_0002_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/glm-5/summary/bench02_02_0002_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        }
+      ]
+    },
+    {
+      "model": "deepseek-v3",
+      "output_dir": "intermediate/rag_model_compare_bench02/deepseek-v3",
+      "manifest": "intermediate/rag_model_compare_bench02/deepseek-v3/bench02_manifest.json",
+      "records": [
+        {
+          "seq": 1,
+          "news_id": "0001",
+          "raw": "data/news_dataset/raw/0001_近年来，外卖骑手几乎成了中国劳资纠纷和集体抗议中最常出现的身影之一。由.txt",
+          "model": "deepseek-v3",
+          "structured_path": "intermediate/rag_model_compare_bench02/deepseek-v3/structured/bench02_01_0001_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/deepseek-v3/summary/bench02_01_0001_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "seq": 2,
+          "news_id": "0002",
+          "raw": "data/news_dataset/raw/0002_元宵节（3月3日），江苏句容市宝华镇环卫工人集体罢工，讨要工资。 --.txt",
+          "model": "deepseek-v3",
+          "structured_path": "intermediate/rag_model_compare_bench02/deepseek-v3/structured/bench02_02_0002_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/deepseek-v3/summary/bench02_02_0002_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    }
+  ],
+  "finished_at_utc": "2026-05-04T08:33:51.992538+00:00"
+}

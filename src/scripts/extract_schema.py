@@ -15,6 +15,8 @@
 批量模式自動跳過已完成檔案（斷點續跑），失敗記錄寫入 intermediate/logs/extract_errors.log。
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import logging
@@ -123,13 +125,19 @@ def _strip_json_comments(s: str) -> str:
     return joined
 
 
-def call_llm(user_prompt: str, max_retries: int = 3) -> dict:
+def call_llm(
+    user_prompt: str,
+    max_retries: int = 3,
+    *,
+    model: str | None = None,
+) -> dict:
     """
     調用 LLM API 進行結構化抽取，含 exponential backoff 重試。
 
     Args:
         user_prompt: 組裝好的 user prompt。
         max_retries: 最大重試次數。
+        model: 模型名；為 None 時使用環境變數 LLM_MODEL。
 
     Returns:
         LLM 輸出的 dict。
@@ -138,12 +146,13 @@ def call_llm(user_prompt: str, max_retries: int = 3) -> dict:
         RuntimeError: 超過重試次數仍失敗。
     """
     client = _get_client()
+    use_model = model if model is not None else MODEL
     last_error: Exception | None = None
 
     for attempt in range(max_retries + 1):
         try:
             response = client.chat.completions.create(
-                model=MODEL,
+                model=use_model,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": user_prompt},
@@ -202,6 +211,8 @@ def merge_result(llm_result: dict, meta_dict: dict, parsed: dict) -> dict:
 def extract_structured_from_raw(
     raw_path: Path,
     max_retries: int = 3,
+    *,
+    model: str | None = None,
 ) -> dict:
     """
     即時從單篇 raw 檔案抽取結構化資料，僅回傳 dict，不寫入檔案。
@@ -209,6 +220,7 @@ def extract_structured_from_raw(
     Args:
         raw_path: raw txt 檔案路徑。
         max_retries: LLM API 重試次數。
+        model: 覆寫本次呼叫的模型名；為 None 則用模組預設（LLM_MODEL）。
 
     Returns:
         extract_schema 規格的完整結構化 JSON dict。
@@ -227,7 +239,7 @@ def extract_structured_from_raw(
         raise RuntimeError(f"原文缺少內文：{raw_path.name}")
 
     user_prompt = build_user_prompt(title=parsed["title"], body=parsed["body"])
-    llm_result = call_llm(user_prompt, max_retries=max_retries)
+    llm_result = call_llm(user_prompt, max_retries=max_retries, model=model)
 
     return merge_result(llm_result, meta.to_dict(), parsed)
 

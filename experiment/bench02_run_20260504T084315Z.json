@@ -1,0 +1,200 @@
+{
+  "step": "bench02",
+  "script": "src/scripts/bench_02_rag_multimodel.py",
+  "schema_prompt": "src/prompts/schema_extraction_prompt.py",
+  "summary_prompt": "src/prompts/summary_prompt.py",
+  "rag": "src/retrieval/retrieve.py（Chroma 知識庫與主專案相同）",
+  "started_at_utc": "2026-05-04T08:41:58.734559+00:00",
+  "limit": 5,
+  "top_k": 10,
+  "execution_order": "by_article_then_models",
+  "models": [
+    {
+      "model": "qwen-max",
+      "output_dir": "intermediate/rag_model_compare_bench02/qwen-max",
+      "manifest": "intermediate/rag_model_compare_bench02/qwen-max/bench02_manifest.json",
+      "records": [
+        {
+          "seq": 1,
+          "news_id": "0001",
+          "raw": "data/news_dataset/raw/0001_近年来，外卖骑手几乎成了中国劳资纠纷和集体抗议中最常出现的身影之一。由.txt",
+          "model": "qwen-max",
+          "structured_path": "intermediate/rag_model_compare_bench02/qwen-max/structured/bench02_01_0001_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/qwen-max/summary/bench02_01_0001_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        },
+        {
+          "seq": 2,
+          "news_id": "0002",
+          "raw": "data/news_dataset/raw/0002_元宵节（3月3日），江苏句容市宝华镇环卫工人集体罢工，讨要工资。 --.txt",
+          "model": "qwen-max",
+          "structured_path": "intermediate/rag_model_compare_bench02/qwen-max/structured/bench02_02_0002_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/qwen-max/summary/bench02_02_0002_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        },
+        {
+          "seq": 3,
+          "news_id": "0003",
+          "raw": "data/news_dataset/raw/0003_西贝被曝降薪缓发、裁员赔偿分期1年，员工拒后被通知待岗.txt",
+          "model": "qwen-max",
+          "structured_path": "intermediate/rag_model_compare_bench02/qwen-max/structured/bench02_03_0003_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/qwen-max/summary/bench02_03_0003_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        },
+        {
+          "seq": 4,
+          "news_id": "0004",
+          "raw": "data/news_dataset/raw/0004_“谁先删负面，优先补发工资！”丰茂烤串连环闭店，创始人求员工“顾全大局”.txt",
+          "model": "qwen-max",
+          "structured_path": "intermediate/rag_model_compare_bench02/qwen-max/structured/bench02_04_0004_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/qwen-max/summary/bench02_04_0004_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        },
+        {
+          "seq": 5,
+          "news_id": "0005",
+          "raw": "data/news_dataset/raw/0005_恶意欠薪84755元，一服饰厂老板逃匿外地被警方抓获.txt",
+          "model": "qwen-max",
+          "structured_path": "intermediate/rag_model_compare_bench02/qwen-max/structured/bench02_05_0005_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/qwen-max/summary/bench02_05_0005_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        }
+      ]
+    },
+    {
+      "model": "glm-5",
+      "output_dir": "intermediate/rag_model_compare_bench02/glm-5",
+      "manifest": "intermediate/rag_model_compare_bench02/glm-5/bench02_manifest.json",
+      "records": [
+        {
+          "seq": 1,
+          "news_id": "0001",
+          "raw": "data/news_dataset/raw/0001_近年来，外卖骑手几乎成了中国劳资纠纷和集体抗议中最常出现的身影之一。由.txt",
+          "model": "glm-5",
+          "structured_path": "intermediate/rag_model_compare_bench02/glm-5/structured/bench02_01_0001_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/glm-5/summary/bench02_01_0001_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        },
+        {
+          "seq": 2,
+          "news_id": "0002",
+          "raw": "data/news_dataset/raw/0002_元宵节（3月3日），江苏句容市宝华镇环卫工人集体罢工，讨要工资。 --.txt",
+          "model": "glm-5",
+          "structured_path": "intermediate/rag_model_compare_bench02/glm-5/structured/bench02_02_0002_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/glm-5/summary/bench02_02_0002_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        },
+        {
+          "seq": 3,
+          "news_id": "0003",
+          "raw": "data/news_dataset/raw/0003_西贝被曝降薪缓发、裁员赔偿分期1年，员工拒后被通知待岗.txt",
+          "model": "glm-5",
+          "structured_path": "intermediate/rag_model_compare_bench02/glm-5/structured/bench02_03_0003_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/glm-5/summary/bench02_03_0003_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        },
+        {
+          "seq": 4,
+          "news_id": "0004",
+          "raw": "data/news_dataset/raw/0004_“谁先删负面，优先补发工资！”丰茂烤串连环闭店，创始人求员工“顾全大局”.txt",
+          "model": "glm-5",
+          "structured_path": "intermediate/rag_model_compare_bench02/glm-5/structured/bench02_04_0004_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/glm-5/summary/bench02_04_0004_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        },
+        {
+          "seq": 5,
+          "news_id": "0005",
+          "raw": "data/news_dataset/raw/0005_恶意欠薪84755元，一服饰厂老板逃匿外地被警方抓获.txt",
+          "model": "glm-5",
+          "structured_path": "intermediate/rag_model_compare_bench02/glm-5/structured/bench02_05_0005_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/glm-5/summary/bench02_05_0005_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        }
+      ]
+    },
+    {
+      "model": "deepseek-v3",
+      "output_dir": "intermediate/rag_model_compare_bench02/deepseek-v3",
+      "manifest": "intermediate/rag_model_compare_bench02/deepseek-v3/bench02_manifest.json",
+      "records": [
+        {
+          "seq": 1,
+          "news_id": "0001",
+          "raw": "data/news_dataset/raw/0001_近年来，外卖骑手几乎成了中国劳资纠纷和集体抗议中最常出现的身影之一。由.txt",
+          "model": "deepseek-v3",
+          "structured_path": "intermediate/rag_model_compare_bench02/deepseek-v3/structured/bench02_01_0001_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/deepseek-v3/summary/bench02_01_0001_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        },
+        {
+          "seq": 2,
+          "news_id": "0002",
+          "raw": "data/news_dataset/raw/0002_元宵节（3月3日），江苏句容市宝华镇环卫工人集体罢工，讨要工资。 --.txt",
+          "model": "deepseek-v3",
+          "structured_path": "intermediate/rag_model_compare_bench02/deepseek-v3/structured/bench02_02_0002_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/deepseek-v3/summary/bench02_02_0002_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": true
+        },
+        {
+          "seq": 3,
+          "news_id": "0003",
+          "raw": "data/news_dataset/raw/0003_西贝被曝降薪缓发、裁员赔偿分期1年，员工拒后被通知待岗.txt",
+          "model": "deepseek-v3",
+          "structured_path": "intermediate/rag_model_compare_bench02/deepseek-v3/structured/bench02_03_0003_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/deepseek-v3/summary/bench02_03_0003_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "seq": 4,
+          "news_id": "0004",
+          "raw": "data/news_dataset/raw/0004_“谁先删负面，优先补发工资！”丰茂烤串连环闭店，创始人求员工“顾全大局”.txt",
+          "model": "deepseek-v3",
+          "structured_path": "intermediate/rag_model_compare_bench02/deepseek-v3/structured/bench02_04_0004_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/deepseek-v3/summary/bench02_04_0004_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": false
+        },
+        {
+          "seq": 5,
+          "news_id": "0005",
+          "raw": "data/news_dataset/raw/0005_恶意欠薪84755元，一服饰厂老板逃匿外地被警方抓获.txt",
+          "model": "deepseek-v3",
+          "structured_path": "intermediate/rag_model_compare_bench02/deepseek-v3/structured/bench02_05_0005_structured.json",
+          "summary_path": "intermediate/rag_model_compare_bench02/deepseek-v3/summary/bench02_05_0005_rag.md",
+          "ok": true,
+          "error": null,
+          "skipped": false
+        }
+      ]
+    }
+  ],
+  "finished_at_utc": "2026-05-04T08:43:15.120806+00:00"
+}

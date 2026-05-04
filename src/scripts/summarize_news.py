@@ -91,6 +91,8 @@ def call_llm_for_summary(
     system_prompt: str,
     user_prompt: str,
     max_retries: int = 3,
+    *,
+    model: str | None = None,
 ) -> str:
     """
     呼叫 LLM 生成摘要，含 exponential backoff 重試。
@@ -99,6 +101,7 @@ def call_llm_for_summary(
         system_prompt: system 指令。
         user_prompt: 包含原文 / 結構化資訊 / 法條的 user prompt。
         max_retries: 最大重試次數。
+        model: 模型名；為 None 時使用環境變數 LLM_MODEL。
 
     Returns:
         LLM 輸出的純文字摘要。
@@ -107,12 +110,13 @@ def call_llm_for_summary(
         RuntimeError: 超過重試次數仍失敗。
     """
     client = _get_client()
+    use_model = model if model is not None else MODEL
     last_error: Exception | None = None
 
     for attempt in range(max_retries + 1):
         try:
             response = client.chat.completions.create(
-                model=MODEL,
+                model=use_model,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
@@ -145,6 +149,7 @@ def summarize_single(
     use_rag: bool = True,
     top_k: int = 10,
     max_retries: int = 3,
+    model: str | None = None,
 ) -> str:
     """
     對單篇新聞執行摘要流程：讀取 →（可選）RAG 檢索 → LLM 生成。
@@ -155,6 +160,7 @@ def summarize_single(
         use_rag: 若 True 則檢索法條並使用含 RAG 的 prompt；若 False 則僅用原文與結構化資料。
         top_k: RAG 檢索的 Top-k 法條數量（use_rag 時有效）。
         max_retries: LLM 呼叫重試次數。
+        model: 覆寫本次摘要呼叫的模型名；為 None 則用 LLM_MODEL。
 
     Returns:
         生成的摘要文字。
@@ -173,7 +179,9 @@ def summarize_single(
         system_prompt = SYSTEM_PROMPT_STRUCTURED_ONLY
 
     print("正在调用 LLM 生成摘要…", file=sys.stderr, flush=True)
-    summary = call_llm_for_summary(system_prompt, user_prompt, max_retries=max_retries)
+    summary = call_llm_for_summary(
+        system_prompt, user_prompt, max_retries=max_retries, model=model
+    )
 
     return summary
 

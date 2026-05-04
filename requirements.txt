@@ -4,6 +4,9 @@ openai==2.26.0
 python-dotenv==1.2.2
 requests==2.32.5
 sentence-transformers==5.2.3
+nltk>=3.8.1
+rouge-score>=0.1.2
+jieba>=0.42.1
 
 # dev
 pytest
