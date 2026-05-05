@@ -189,8 +189,9 @@ function App() {
 
     try {
       // GH Pages 通用：GET 不打 Apps Script（避免 CORS 與 query/path 限制）
-      const sessionsUrl = `/step01_data/step01_sessions_10x12.json`
-      const articlesUrl = `/step01_data/step01_articles_by_id.json`
+      const baseUrl = import.meta.env.BASE_URL || '/'
+      const sessionsUrl = `${baseUrl}step01_data/step01_sessions_10x12.json`
+      const articlesUrl = `${baseUrl}step01_data/step01_articles_by_id.json`
 
       const [{ res: sRes, data: sData }, { res: aRes, data: aData }] = await Promise.all([
         fetchJson(sessionsUrl, { method: 'GET' }),
@@ -259,7 +260,8 @@ function App() {
     persistBasics(normalizeExecBase(execBase), sessionId, participantId)
 
     try {
-      const sessionsUrl = `/step01_data/step01_sessions_10x12.json`
+      const baseUrl = import.meta.env.BASE_URL || '/'
+      const sessionsUrl = `${baseUrl}step01_data/step01_sessions_10x12.json`
       const { res: sRes, data: sData } = await fetchJson(sessionsUrl, { method: 'GET' })
       if (!sRes.ok) throw new Error(`載入 sessions 失敗：HTTP ${sRes.status}`)
       const sessions = sData as StaticSessions
