@@ -1,0 +1,16 @@
+{
+  "step": "step00_db_layout",
+  "kind": "rename_to_txt",
+  "git_head": "29361e89d44c2d2b3b4476faa30f1af4ecd2580e",
+  "renames": {
+    "raw.txt": "original.txt",
+    "summary_raw.md": "summary_raw.txt",
+    "structure_text.md": "summary_structure.txt",
+    "rag.md": "summary_rag.txt"
+  },
+  "removed": [
+    "structured.json"
+  ],
+  "manifest": "intermediate/step00_sampling/step00_sampled_articles_30.json",
+  "finished_at_utc": "2026-05-04T16:30:31.490350+00:00"
+}

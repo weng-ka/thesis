@@ -1,0 +1,34 @@
+{
+  "step": "bench03",
+  "outputs": {
+    "json": "intermediate/outputs/bench03_compare_metrics.json",
+    "markdown": "intermediate/outputs/bench03_compare_table.md"
+  },
+  "metrics_by_model": {
+    "qwen-max": {
+      "bleu1": 0.468997,
+      "bleu4": 0.175184,
+      "rouge1_f": 0.518973,
+      "rouge2_f": 0.234457,
+      "rougeL_f": 0.349847,
+      "n_pairs": 10
+    },
+    "glm-5": {
+      "bleu1": 0.477502,
+      "bleu4": 0.160539,
+      "rouge1_f": 0.527208,
+      "rouge2_f": 0.230852,
+      "rougeL_f": 0.355426,
+      "n_pairs": 10
+    },
+    "deepseek-v3": {
+      "bleu1": 0.531365,
+      "bleu4": 0.190455,
+      "rouge1_f": 0.543947,
+      "rouge2_f": 0.244332,
+      "rougeL_f": 0.377054,
+      "n_pairs": 10
+    }
+  },
+  "finished_at_utc": "2026-05-04T14:51:51.892636+00:00"
+}

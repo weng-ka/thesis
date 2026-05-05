@@ -1,0 +1,16 @@
+{
+  "step": "step00",
+  "kind": "patch",
+  "patch": {
+    "note": "0087->0076（RAG=bench02_76_0076）；0117->0116（RAG=bench02_115_0116）",
+    "patched_at_utc": "2026-05-04T15:20:57.415562+00:00",
+    "prior_replacement_note": "延續先前 0030/0074 槽位上的手動替換鏈"
+  },
+  "replacements": {
+    "0087": "0076",
+    "0117": "0116"
+  },
+  "sampled_articles": "intermediate/step00_sampling/step00_sampled_articles_30.json",
+  "sessions": "intermediate/step00_sampling/step00_sessions_10x12.json",
+  "db_root": "intermediate/step00_sampling/step00_db_deepseek-v3"
+}

@@ -1,0 +1,23 @@
+{
+  "step": "step00",
+  "script": "srcs/step00_sampling_and_sessions.py",
+  "git_head": "29361e89d44c2d2b3b4476faa30f1af4ecd2580e",
+  "model": "deepseek-v3",
+  "seed": 20260504,
+  "limit_max_id": 104,
+  "sample_size": 30,
+  "n_sessions": 10,
+  "per_session": 12,
+  "sources": {
+    "raw_dir": "data/news_dataset/raw",
+    "bench02_structured_dir": "intermediate/rag_model_compare_bench02/deepseek-v3/structured",
+    "bench02_rag_summary_dir": "intermediate/rag_model_compare_bench02/deepseek-v3/summary"
+  },
+  "outputs": {
+    "db_root": "intermediate/step00_sampling/step00_db_deepseek-v3",
+    "sampled_articles": "intermediate/step00_sampling/step00_sampled_articles_30.json",
+    "sessions": "intermediate/step00_sampling/step00_sessions_10x12.json"
+  },
+  "started_at_utc": "2026-05-04T15:01:23.937446+00:00",
+  "finished_at_utc": "2026-05-04T15:01:24.184961+00:00"
+}

@@ -3,7 +3,7 @@
 ## 入口
 
 ```bash
-python3 src/scripts/bench_03_compare_summaries.py
+python3 srcs/scripts/bench_03_compare_summaries.py
 ```
 
 ## 輸入

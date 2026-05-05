@@ -26,7 +26,7 @@
 
 ## 入口
 
-`python3 src/scripts/bench_02_rag_multimodel.py`（預設 raw **前 5 篇** × 上述三模型）
+`python3 srcs/scripts/bench_02_rag_multimodel.py`（預設 raw **前 5 篇** × 上述三模型）
 
 可選：`--limit`、`--models`、`--top-k`、`--overwrite`。
 

@@ -1,0 +1,27 @@
+{
+  "step": "step01",
+  "kind": "step00_db_summaries",
+  "script": "srcs/step01_generate_step00_summaries.py",
+  "underlying": "srcs/scripts/summarize_news.py",
+  "git_head": "29361e89d44c2d2b3b4476faa30f1af4ecd2580e",
+  "db_root": "intermediate/step00_sampling/step00_db_deepseek-v3",
+  "sampled_json": "intermediate/step00_sampling/step00_sampled_articles_30.json",
+  "model": null,
+  "overwrite": true,
+  "limit": 1,
+  "started_at_utc": "2026-05-04T16:13:35.120634+00:00",
+  "finished_at_utc": "2026-05-04T16:13:50.766132+00:00",
+  "n_articles": 1,
+  "n_ok": 1,
+  "records": [
+    {
+      "news_id": "0003",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0003",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    }
+  ]
+}

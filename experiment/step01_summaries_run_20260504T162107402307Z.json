@@ -1,0 +1,288 @@
+{
+  "step": "step01",
+  "kind": "step00_db_summaries",
+  "script": "srcs/step01_generate_step00_summaries.py",
+  "underlying": "srcs/scripts/summarize_news.py",
+  "git_head": "29361e89d44c2d2b3b4476faa30f1af4ecd2580e",
+  "db_root": "intermediate/step00_sampling/step00_db_deepseek-v3",
+  "sampled_json": "intermediate/step00_sampling/step00_sampled_articles_30.json",
+  "model": null,
+  "overwrite": false,
+  "limit": null,
+  "started_at_utc": "2026-05-04T16:14:02.263925+00:00",
+  "finished_at_utc": "2026-05-04T16:21:07.402201+00:00",
+  "n_articles": 30,
+  "n_ok": 30,
+  "records": [
+    {
+      "news_id": "0003",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0003",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": false,
+      "structure_text_written": false,
+      "skipped": true
+    },
+    {
+      "news_id": "0047",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0047",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0008",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0008",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0048",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0048",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0088",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0088",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0110",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0110",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0118",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0118",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0119",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0119",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0010",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0010",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0006",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0006",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0007",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0007",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0014",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0014",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0019",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0019",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0027",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0027",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0028",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0028",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0031",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0031",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0104",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0104",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0055",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0055",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0073",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0073",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0075",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0075",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0076",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0076",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0083",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0083",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0084",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0084",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0102",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0102",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0116",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0116",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0120",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0120",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0123",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0123",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0128",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0128",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0130",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0130",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    },
+    {
+      "news_id": "0132",
+      "article_dir": "intermediate/step00_sampling/step00_db_deepseek-v3/articles/0132",
+      "ok": true,
+      "error": null,
+      "summary_raw_written": true,
+      "structure_text_written": true,
+      "skipped": false
+    }
+  ]
+}
