@@ -39,6 +39,7 @@ jobs:
         working-directory: step01_platform_web
         env:
           BASE_PATH: "/${{ github.event.repository.name }}/"
+          VITE_GAS_EXEC_BASE: "${{ vars.VITE_GAS_EXEC_BASE }}"
         run: npm run build
 
       - name: Upload Pages artifact

@@ -142,7 +142,13 @@ type View = 'home' | 'metrics' | 'loading' | 'article' | 'submit' | 'done' | 'er
 function App() {
   const [view, setView] = useState<View>('home')
   // 只用於提交（POST）。GET 改由本站靜態 JSON，確保 GitHub Pages 可用且避開 CORS。
-  const [execBase, setExecBase] = useState<string>(() => localStorage.getItem('step01_exec_base') || '')
+  const [execBase, setExecBase] = useState<string>(() => {
+    const saved = localStorage.getItem('step01_exec_base')
+    if (saved) return saved
+    // Build-time default (set via VITE_GAS_EXEC_BASE in GitHub Actions vars)
+    const envDefault = (import.meta.env.VITE_GAS_EXEC_BASE as string | undefined) || ''
+    return envDefault
+  })
   const [sid, setSid] = useState<string>(() => localStorage.getItem('step01_sid') || 'S001')
   const [participantId, setParticipantId] = useState<string>(() => localStorage.getItem('step01_participant_id') || '')
 
