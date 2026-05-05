@@ -1,0 +1,59 @@
+name: step01-platform-web (GitHub Pages)
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "step01_platform_web/**"
+      - ".github/workflows/step01_platform_web_pages.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: step01_platform_web/package-lock.json
+
+      - name: Install
+        working-directory: step01_platform_web
+        run: npm ci
+
+      - name: Build
+        working-directory: step01_platform_web
+        env:
+          BASE_PATH: "/${{ github.event.repository.name }}/"
+        run: npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: step01_platform_web/dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
