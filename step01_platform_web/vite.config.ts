@@ -4,6 +4,8 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  // GitHub Pages 需要設 base（資源路徑會掛在 /<repo>/ 下）
+  base: process.env.BASE_PATH || '/',
   server: {
     proxy: {
       // Dev-only proxy to bypass CORS and Google query restrictions.

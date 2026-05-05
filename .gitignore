@@ -7,3 +7,7 @@ data/
 docs/
 intermediate/
 .pytest_cache/
+
+# 不上傳（本地實驗紀錄/知識筆記）
+experiment/
+knowledge/
