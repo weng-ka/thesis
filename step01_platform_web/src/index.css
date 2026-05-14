@@ -17,7 +17,7 @@
 
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
-  /* 固定使用淺色模式（避免系統深色模式造成閱讀負擔） */
+  /* 固定使用浅色模式（避免系统深色模式造成阅读负担） */
   color-scheme: light;
   color: var(--text);
   background: var(--bg);

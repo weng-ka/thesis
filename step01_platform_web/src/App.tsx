@@ -56,28 +56,28 @@ type StaticArticlesById = Record<
 const METRICS: MetricDef[] = [
   {
     key: 0,
-    title: '指標 0：整體理解幫助度',
-    description: '哪個摘要最能幫你快速且正確掌握這篇新聞「發生了什麼」？',
+    title: '指标 0：整体理解帮助度',
+    description: '哪个摘要最能帮你快速且正确掌握这篇新闻「发生了什么」？',
   },
   {
     key: 1,
-    title: '指標 1：關鍵事實完整性',
-    description: '是否涵蓋關鍵角色、事件、結果與必要背景（缺什麼會影響理解）？',
+    title: '指标 1：关键事实完整性',
+    description: '是否涵盖关键角色、事件、结果与必要背景（缺什么会影响理解）？',
   },
   {
     key: 2,
-    title: '指標 2：責任／歸因清晰度',
-    description: '是否清楚指出責任主體、爭議點與行為性質（避免把結構問題變成個人責任）？',
+    title: '指标 2：责任／归因清晰度',
+    description: '是否清楚指出责任主体、争议点与行为性质（避免把结构问题变成个人责任）？',
   },
   {
     key: 3,
-    title: '指標 3：勞工立場呈現',
-    description: '是否充分呈現勞工處境、工人話語與權益受侵害的內容，而非只站在資方/官方角度？',
+    title: '指标 3：劳工立场呈现',
+    description: '是否充分呈现劳工处境、工人话语与权益受侵害的内容，而非只站在资方/官方角度？',
   },
   {
     key: 4,
-    title: '指標 4：可讀性與可用性',
-    description: '文字是否清楚、結構是否好讀、資訊是否不混亂（且不胡亂補細節）？',
+    title: '指标 4：可读性与可用性',
+    description: '文字是否清楚、结构是否好读、资讯是否不混乱（且不胡乱补细节）？',
   },
 ]
 
@@ -108,8 +108,8 @@ function isMetricComplete(triple: TripleScore): { ok: boolean; reason?: string }
   const values = Object.values(triple)
   const best = values.filter((v) => v === 1).length
   const worst = values.filter((v) => v === -1).length
-  if (best !== 1) return { ok: false, reason: best === 0 ? '尚未選 Best' : '出現多個 Best' }
-  if (worst !== 1) return { ok: false, reason: worst === 0 ? '尚未選 Worst' : '出現多個 Worst' }
+  if (best !== 1) return { ok: false, reason: best === 0 ? '尚未选 Best' : '出现多个 Best' }
+  if (worst !== 1) return { ok: false, reason: worst === 0 ? '尚未选 Worst' : '出现多个 Worst' }
   return { ok: true }
 }
 
@@ -123,7 +123,7 @@ function setChoiceScore(triple: TripleScore, choice: Choice): TripleScore {
   const next = cycleScore(triple[choice])
   const out: TripleScore = { ...triple, [choice]: next }
 
-  // 保證同一時間只有一個 Best / 一個 Worst（點下去就把其他同類型清掉）
+  // 保证同一时间只有一个 Best / 一个 Worst（点下去就把其他同类型清掉）
   if (next === 1) {
     ;(Object.keys(out) as Choice[]).forEach((c) => {
       if (c !== choice && out[c] === 1) out[c] = 0
@@ -141,7 +141,7 @@ type View = 'home' | 'metrics' | 'loading' | 'article' | 'submit' | 'done' | 'er
 
 function App() {
   const [view, setView] = useState<View>('home')
-  // 只用於提交（POST）。GET 改由本站靜態 JSON，確保 GitHub Pages 可用且避開 CORS。
+  // 只用于提交（POST）。GET 改由本站静态 JSON，确保 GitHub Pages 可用且避开 CORS。
   const [execBase, setExecBase] = useState<string>(() => {
     const saved = localStorage.getItem('step01_exec_base')
     if (saved) return saved
@@ -170,7 +170,7 @@ function App() {
     try {
       return { res, data: JSON.parse(text) as unknown }
     } catch {
-      throw new Error(`HTTP ${res.status}（非 JSON 回應）\nURL: ${url}\n---\n${text.slice(0, 800)}`)
+      throw new Error(`HTTP ${res.status}（非 JSON 回应）\nURL: ${url}\n---\n${text.slice(0, 800)}`)
     }
   }
 
@@ -188,7 +188,7 @@ function App() {
     persistBasics(normalizeExecBase(execBase), sessionId, participantId)
 
     try {
-      // GH Pages 通用：GET 不打 Apps Script（避免 CORS 與 query/path 限制）
+      // GH Pages 通用：GET 不打 Apps Script（避免 CORS 与 query/path 限制）
       const baseUrl = import.meta.env.BASE_URL || '/'
       const sessionsUrl = `${baseUrl}step01_data/step01_sessions_10x12.json`
       const articlesUrl = `${baseUrl}step01_data/step01_articles_by_id.json`
@@ -197,19 +197,19 @@ function App() {
         fetchJson(sessionsUrl, { method: 'GET' }),
         fetchJson(articlesUrl, { method: 'GET' }),
       ])
-      if (!sRes.ok) throw new Error(`載入 sessions 失敗：HTTP ${sRes.status}`)
-      if (!aRes.ok) throw new Error(`載入 articles 失敗：HTTP ${aRes.status}`)
+      if (!sRes.ok) throw new Error(`载入 sessions 失败：HTTP ${sRes.status}`)
+      if (!aRes.ok) throw new Error(`载入 articles 失败：HTTP ${aRes.status}`)
 
       const sessions = sData as StaticSessions
       const articlesById = aData as StaticArticlesById
       const ids = sessions.sessions?.[sessionId]
-      if (!ids || ids.length !== 12) throw new Error(`unknown_session 或 per_session 不為 12：${sessionId}`)
+      if (!ids || ids.length !== 12) throw new Error(`unknown_session 或 per_session 不为 12：${sessionId}`)
 
       const builtArticles: SessionArticle[] = ids.map((aid) => {
         const r = articlesById[aid]
         if (!r) throw new Error(`article_not_in_static_data: ${aid}`)
 
-        // 前端生成 A/B/C 隨機對應（並在提交時回傳 ab_mapping 以便分析反解）
+        // 前端生成 A/B/C 随机对应（并在提交时回传 ab_mapping 以便分析反解）
         const pool = [
           { key: 'raw' as const, text: r.summary_raw },
           { key: 'structured' as const, text: r.summary_structured },
@@ -263,12 +263,12 @@ function App() {
       const baseUrl = import.meta.env.BASE_URL || '/'
       const sessionsUrl = `${baseUrl}step01_data/step01_sessions_10x12.json`
       const { res: sRes, data: sData } = await fetchJson(sessionsUrl, { method: 'GET' })
-      if (!sRes.ok) throw new Error(`載入 sessions 失敗：HTTP ${sRes.status}`)
+      if (!sRes.ok) throw new Error(`载入 sessions 失败：HTTP ${sRes.status}`)
       const sessions = sData as StaticSessions
       const ids = sessions.sessions?.[sessionId]
-      if (!ids || ids.length !== 12) throw new Error(`unknown_session 或 per_session 不為 12：${sessionId}`)
+      if (!ids || ids.length !== 12) throw new Error(`unknown_session 或 per_session 不为 12：${sessionId}`)
 
-      // 最小 session：只為了測試 POST 是否能寫入 Sheet（不載入全文與摘要）
+      // 最小 session：只为了测试 POST 是否能写入 Sheet（不载入全文与摘要）
       setSession({
         ok: true,
         session_id: sessionId,
@@ -299,7 +299,7 @@ function App() {
 
     if (!base || !base.includes('/exec')) {
       setSubmitStatus('error')
-      setError('請填入 Apps Script Web App 的 /exec 網址（用於提交）。')
+      setError('请填入 Apps Script Web App 的 /exec 网址（用于提交）。')
       return
     }
 
@@ -321,10 +321,10 @@ function App() {
     }
 
     try {
-      // GH Pages 通用提交（最穩）：用 <form> POST 避開 CORS / preflight / redirect 限制。
-      // 後端需支援 form body：api=submit&payload=<json>
+      // GH Pages 通用提交（最稳）：用 <form> POST 避开 CORS / preflight / redirect 限制。
+      // 后端需支援 form body：api=submit&payload=<json>
       //
-      // 注意：我們無法讀取回應，但可以用 iframe 的 load 事件確認「請求確實發出」。
+      // 注意：我们无法读取回应，但可以用 iframe 的 load 事件确认「请求确实发出」。
       console.info('[step01] submitting to', base, { session_id: sessionId })
 
       const form = document.createElement('form')
@@ -355,10 +355,10 @@ function App() {
       document.body.appendChild(form)
       form.submit()
 
-      // 等 iframe load 才算「有發出去」（不代表寫入成功，但至少會在 Apps Script 看到 doPost）
+      // 等 iframe load 才算「有发出去」（不代表写入成功，但至少会在 Apps Script 看到 doPost）
       await new Promise<void>((resolve, reject) => {
         const timeout = window.setTimeout(() => {
-          reject(new Error('提交逾時：瀏覽器未完成送出（請檢查 Network 是否有 /exec POST）'))
+          reject(new Error('提交逾时：浏览器未完成送出（请检查 Network 是否有 /exec POST）'))
         }, 12000)
 
         iframe.addEventListener(
@@ -430,13 +430,13 @@ function App() {
     <div className="shell">
       <header className="topbar">
         <div className="topbar-left">
-          <div className="brand">Step01 人工評估平台（MVP）</div>
-          <div className="muted">先看原文，再看摘要；每指標選 1 Best + 1 Worst</div>
+          <div className="brand">Step01 人工评估平台（MVP）</div>
+          <div className="muted">先看原文，再看摘要；每指标选 1 Best + 1 Worst</div>
         </div>
         {view === 'article' && session?.articles ? (
           <div className="topbar-right">
             <div className="pill">
-              進度 <b>{articleIdx + 1}</b>/{session.articles.length}
+              进度 <b>{articleIdx + 1}</b>/{session.articles.length}
             </div>
           </div>
         ) : null}
@@ -445,22 +445,22 @@ function App() {
       <main className="main">
         {view === 'home' ? (
           <section className="card">
-            <h1>勞工立場新聞摘要：人工評估</h1>
+            <h1>劳工立场新闻摘要：人工评估</h1>
             <p className="lead">
-              本平台會給你一個 session（12 篇）。每篇請先完整閱讀原文，再比較 A/B/C 三個摘要，依 0→4
-              指標各選 1 個 Best 與 1 個 Worst。
+              本平台会给你一个 session（12 篇）。每篇请先完整阅读原文，再比较 A/B/C 三个摘要，依 0→4
+              指标各选 1 个 Best 与 1 个 Worst。
             </p>
 
             <div className="form">
               <label>
-                <div className="label">Apps Script Web App（/exec，僅用於提交）</div>
+                <div className="label">Apps Script Web App（/exec，仅用于提交）</div>
                 <input
                   value={execBase}
                   onChange={(e) => setExecBase(e.target.value)}
                   placeholder="https://script.google.com/macros/s/.../exec"
                 />
                 <div className="hint">
-                  讀取 session 已改成本站靜態 JSON（可部署到 GitHub Pages）。這裡只需要填提交用的 <code>/exec</code>。
+                  读取 session 已改成本站静态 JSON（可部署到 GitHub Pages）。这里只需要填提交用的 <code>/exec</code>。
                 </div>
               </label>
 
@@ -482,10 +482,10 @@ function App() {
 
             <div className="actions">
               <button className="btn" type="button" onClick={() => setView('metrics')}>
-                開始
+                开始
               </button>
               <button className="btn ghost" type="button" onClick={quickToSubmitPage}>
-                直接到提交頁（測試）
+                直接到提交页（测试）
               </button>
             </div>
           </section>
@@ -493,7 +493,7 @@ function App() {
 
         {view === 'metrics' ? (
           <section className="card">
-            <h1>評估指標（0–4）</h1>
+            <h1>评估指标（0–4）</h1>
             <div className="metricList">
               {METRICS.map((m) => (
                 <div key={m.key} className="metricItem">
@@ -507,7 +507,7 @@ function App() {
                 返回
               </button>
               <button className="btn" type="button" onClick={loadSession}>
-                我已理解，開始評測
+                我已理解，开始评测
               </button>
             </div>
           </section>
@@ -515,18 +515,18 @@ function App() {
 
         {view === 'loading' ? (
           <section className="card">
-            <h1>載入中…</h1>
-            <p className="muted">正在從 Apps Script 讀取 session 資料。</p>
+            <h1>载入中…</h1>
+            <p className="muted">正在从 Apps Script 读取 session 资料。</p>
           </section>
         ) : null}
 
         {view === 'error' ? (
           <section className="card">
-            <h1>發生錯誤</h1>
+            <h1>发生错误</h1>
             <pre className="pre">{error}</pre>
             <div className="actions">
               <button className="btn" type="button" onClick={() => setView('home')}>
-                回到首頁
+                回到首页
               </button>
             </div>
           </section>
@@ -545,7 +545,7 @@ function App() {
             </section>
 
             <section className="card">
-              <h2>評分（0→4）</h2>
+              <h2>评分（0→4）</h2>
 
               <div className="metricTabs">
                 {METRICS.map((m) => (
@@ -590,7 +590,7 @@ function App() {
                 <div className="checklist">
                   {metricStatusForCurrent().map((s) => (
                     <div key={s.key} className={s.ok ? 'check ok' : 'check bad'}>
-                      <span className="checkKey">指標 {s.key}</span>
+                      <span className="checkKey">指标 {s.key}</span>
                       <span className="checkMsg">{s.ok ? '✅ 已完成' : `⚠️ ${s.reason}`}</span>
                     </div>
                   ))}
@@ -602,7 +602,7 @@ function App() {
                   上一篇
                 </button>
                 <button className="btn" type="button" onClick={goNext} disabled={!isCurrentArticleComplete()}>
-                  {articleIdx === (session?.articles?.length || 1) - 1 ? '完成並前往提交' : '下一篇'}
+                  {articleIdx === (session?.articles?.length || 1) - 1 ? '完成并前往提交' : '下一篇'}
                 </button>
               </div>
             </section>
@@ -613,7 +613,7 @@ function App() {
           <section className="card">
             <h1>提交</h1>
             <p className="muted">
-              你已完成 12 篇評測。按下提交後，系統會一次性把本 session 的所有結果寫入 Google Sheet。
+              你已完成 12 篇评测。按下提交后，系统会一次性把本 session 的所有结果写入 Google Sheet。
             </p>
             {submitStatus === 'error' ? <pre className="pre">{error}</pre> : null}
             <div className="actions">
@@ -621,7 +621,7 @@ function App() {
                 返回修改
               </button>
               <button className="btn" type="button" onClick={submitAll} disabled={submitStatus === 'submitting'}>
-                {submitStatus === 'submitting' ? '提交中…' : '確認提交'}
+                {submitStatus === 'submitting' ? '提交中…' : '确认提交'}
               </button>
             </div>
           </section>
@@ -630,10 +630,10 @@ function App() {
         {view === 'done' ? (
           <section className="card">
             <h1>已提交</h1>
-            <p className="muted">感謝！你可以直接關閉頁面。</p>
+            <p className="muted">感谢！你可以直接关闭页面。</p>
             <div className="actions">
               <button className="btn" type="button" onClick={() => setView('home')}>
-                回到首頁
+                回到首页
               </button>
             </div>
           </section>
