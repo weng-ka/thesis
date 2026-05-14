@@ -430,7 +430,7 @@ function App() {
     <div className="shell">
       <header className="topbar">
         <div className="topbar-left">
-          <div className="brand">劳工立场新闻摘要：人工评估平台（MVP）</div>
+          <div className="brand">劳工立场新闻摘要：人工评估平台</div>
           <div className="muted">先看原文，再看摘要；每指标选 1 Best + 1 Worst</div>
         </div>
         {view === 'article' && session?.articles ? (
