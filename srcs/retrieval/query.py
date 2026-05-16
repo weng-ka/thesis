@@ -94,5 +94,9 @@ def encode_query(
     """
     if model is None:
         model = load_embedding_model(model_name)
-    vec = model.encode(query_text, normalize_embeddings=True)
+    vec = model.encode(
+        query_text,
+        normalize_embeddings=True,
+        show_progress_bar=False,
+    )
     return vec
